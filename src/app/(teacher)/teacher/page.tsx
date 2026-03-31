@@ -1,23 +1,25 @@
 'use client';
 
-import { test } from '../../../shared/api/test';
 import {useQuery} from "@tanstack/react-query";
+import Button from '@mui/material/Button'
+import SendIcon from '@mui/icons-material/Send';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Checkbox from '@mui/material/Checkbox'
+
+import { test } from '@/shared/api/test';
 
 export default function Test (){
-  const getUsers = async ()=> {
-    const data = await test();
-    console.log(data);
-  }
 
   const {
     data,
     isLoading,
     isError,
     error,
-    isFetching,
+    refetch,
   } = useQuery({
     queryKey: ["users"],
     queryFn: test,
+    enabled: false,
   });
 
   // Обработка состояний
@@ -27,7 +29,21 @@ export default function Test (){
   return (
     <div>
       <h1>Список пользователей</h1>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
+      <Button onClick={()=> refetch()}>Показать успех</Button>
+
+      <Button variant="text">Text</Button>
+      <Button variant="contained" size={'medium'} color="success">Contained</Button>
+      <Button variant="outlined">Outlined</Button>
+
+      <Button variant="outlined" startIcon={<DeleteIcon />}>
+        Delete
+      </Button>
+      <Button variant="contained" endIcon={<SendIcon />}>
+        Send
+      </Button>
+
+      <Checkbox defaultChecked />
+
     </div>
   );
 }
