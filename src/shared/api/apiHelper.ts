@@ -1,6 +1,5 @@
 // shared/api/apiRequest.js
 export const apiRequest = async (request: any) => {
-  // console.log(await request);
   try {
     const res = await request;
 
