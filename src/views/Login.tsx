@@ -1,15 +1,16 @@
 'use client'
 
 // React Imports
-
 import { useState } from 'react'
-import type { FormEvent } from 'react'
 
 // Next Imports
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
+
+// React Hook Form Imports
+import { useForm, Controller } from 'react-hook-form'
 
 // MUI Imports
 import Card from '@mui/material/Card'
@@ -28,18 +29,27 @@ import type { Mode } from '@core/types'
 import Illustrations from '@components/Illustrations'
 
 // Hook Import
-
 import { useImageVariant } from '@core/hooks/useImageVariant'
 
 import { adToken, getLogin } from '@/shared/api/auth/auth'
 import { toastMessages } from '@/shared/constants/toastMessages'
 
-
 const Login = ({ mode }: { mode: Mode }) => {
   // States
   const [isPasswordShown, setIsPasswordShown] = useState(false)
-  const [email, setEmail] = useState<string | null>(null);
-  const [password, setPassword] = useState<string | null>(null);
+
+  // React Hook Form
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid }
+  } = useForm({
+    mode: 'onChange',
+    defaultValues: {
+      email: '',
+      password: ''
+    }
+  })
 
   // Vars
   const darkImg = '/images/pages/auth-v1-mask-dark.png'
@@ -51,77 +61,98 @@ const Login = ({ mode }: { mode: Mode }) => {
 
   const handleClickShowPassword = () => setIsPasswordShown(show => !show)
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    postMutation.mutate();
-  }
-
   const postMutation = useMutation({
-    mutationFn: ()=> adToken(email, password), // POST
+    mutationFn: (data: any) => adToken(data.email, data.password), // POST
 
     onSuccess: async () => {
       try {
-        const getData = await getLogin(); // GET
-        console.log(getData);
-        if(getData){
-          enqueueSnackbar(toastMessages.auth.loginSuccess, { variant: 'success' });
+        const getData = await getLogin() // GET
+        console.log(getData)
+        if (getData) {
+          enqueueSnackbar(toastMessages.auth.loginSuccess, { variant: 'success' })
         }
-        // обработка данных
-
-        // например сохранить
-        // setState(processed)
-
-        // редирект
-        // router.push("/");
       } catch (err) {
-        enqueueSnackbar(toastMessages.auth.loginError, { variant: 'error' });
+        enqueueSnackbar(toastMessages.auth.loginError, { variant: 'error' })
       }
     },
 
-    onError: (err) => {
-      // ошибка POST
-      console.error(err);
-    },
-  });
+    onError: err => {
+      console.error(err)
+    }
+  })
+
+  const onSubmit = (data: any) => {
+    postMutation.mutate(data)
+  }
+
+  // Регулярное выражение для опасных символов
+  const unsafeCharsRegex = /[<>{}[\]"']/
 
   return (
     <div className='flex flex-col justify-center items-center min-bs-[100dvh] relative p-6'>
       <Card className='flex flex-col sm:is-[450px]'>
         <CardContent className='p-6 sm:!px-12 sm:!py-9'>
           <Link href='/' className='flex justify-center items-center mbe-4'>
-            {/*<Logo />*/}
             Система тестирование ОшГУ
           </Link>
           <div className='flex flex-col gap-5'>
             <div>
-              <Typography variant='h4'>{`Добро пожаловать Test App!👋🏻`}</Typography>
-              {/*<Typography className='mbs-1'>Please sign-in to your account and start the adventure</Typography>*/}
+              <Typography className={'test-sm'} variant='h4'>{`Добро пожаловать в Test App!👋🏻`}</Typography>
             </div>
-            <form noValidate autoComplete='off' onSubmit={handleSubmit} className='flex flex-col gap-5'>
-              <TextField autoFocus fullWidth label='AVN логин' value={email} onChange={(e)=> setEmail(e.target.value)} />
-              <TextField
-                fullWidth
-                label='Пароль'
-                id='outlined-adornment-password'
-                type={isPasswordShown ? 'text' : 'password'}
-                value={password}
-                onChange={(e)=> setPassword(e.target.value)}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position='end'>
-                      <IconButton
-                        size='small'
-                        edge='end'
-                        onClick={handleClickShowPassword}
-                        onMouseDown={e => e.preventDefault()}
-                      >
-                        <i className={isPasswordShown ? 'ri-eye-off-line' : 'ri-eye-line'} />
-                      </IconButton>
-                    </InputAdornment>
-                  )
+            <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
+              <Controller
+                name='email'
+                control={control}
+                rules={{
+                  required: 'Логин обязателен',
+                  validate: value => !unsafeCharsRegex.test(value) || 'Используются недопустимые символы'
                 }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    autoFocus
+                    fullWidth
+                    label='AVN логин'
+                    error={!!errors.email}
+                    helperText={errors.email ? (errors.email.message as string) : ''}
+                  />
+                )}
               />
-              <Button fullWidth variant='contained' type='submit'>
+
+              <Controller
+                name='password'
+                control={control}
+                rules={{
+                  required: 'Пароль обязателен',
+                  validate: value => !unsafeCharsRegex.test(value) || 'Используются недопустимые символы'
+                }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    label='Пароль'
+                    type={isPasswordShown ? 'text' : 'password'}
+                    error={!!errors.password}
+                    helperText={errors.password ? (errors.password.message as string) : ''}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position='end'>
+                          <IconButton
+                            size='small'
+                            edge='end'
+                            onClick={handleClickShowPassword}
+                            onMouseDown={e => e.preventDefault()}
+                          >
+                            <i className={isPasswordShown ? 'ri-eye-off-line' : 'ri-eye-line'} />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                )}
+              />
+
+              <Button fullWidth variant='contained' type='submit' disabled={!isValid || postMutation.isPending}>
                 Войти
               </Button>
             </form>
