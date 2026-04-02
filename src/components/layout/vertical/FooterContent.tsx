@@ -20,9 +20,9 @@ const FooterContent = () => {
 
   return (
     <div
-      className={classnames(verticalLayoutClasses.footerContent, 'bg-backgroundPaper p-3 rounded font-bold flex items-center justify-center gap-2')}
+      className={classnames(verticalLayoutClasses.footerContent, 'text-sm bg-backgroundPaper p-4 rounded font-bold flex items-center justify-center gap-2')}
     >
-      <CopyrightIcon className={'font-light'}/> ОшГУ 2020-г
+      <CopyrightIcon className={'font-light text-[14px]'}/> ОшГУ 2020-г
     </div>
   )
 }
