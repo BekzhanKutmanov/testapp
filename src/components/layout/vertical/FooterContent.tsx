@@ -4,6 +4,8 @@
 import Link from 'next/link'
 
 // Third-party Imports
+import CopyrightIcon from '@mui/icons-material/Copyright';
+
 import classnames from 'classnames'
 
 // Hook Imports
@@ -18,26 +20,9 @@ const FooterContent = () => {
 
   return (
     <div
-      className={classnames(verticalLayoutClasses.footerContent, 'flex items-center justify-between flex-wrap gap-4')}
+      className={classnames(verticalLayoutClasses.footerContent, 'bg-backgroundPaper p-3 rounded font-bold flex items-center justify-center gap-2')}
     >
-      <p>
-        <span>{`© ${new Date().getFullYear()}, Made with `}</span>
-        <span>{`❤️`}</span>
-        <span>{` by `}</span>
-        <Link href='https://themeselection.com' target='_blank' className='text-primary'>
-          ThemeSelection
-        </Link>
-      </p>
-      {!isBreakpointReached && (
-        <div className='flex items-center gap-4'>
-          <Link href='https://themeselection.com/license' target='_blank' className='text-primary'>
-            License
-          </Link>
-          <Link href='https://themeselection.com' target='_blank' className='text-primary'>
-            More Themes
-          </Link>
-        </div>
-      )}
+      <CopyrightIcon className={'font-light'}/> ОшГУ 2020-г
     </div>
   )
 }
