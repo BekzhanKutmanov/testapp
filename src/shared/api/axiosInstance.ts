@@ -2,7 +2,7 @@
 import axios from "axios";
 
 export const axiosInstance = axios.create({
-  baseURL: "https://jsonplaceholder.typicode.com/posts"
+  baseURL: "https://69ce1d6b33a09f831b7cec43.mockapi.io/subjects"
 });
 
 // request (токен)
@@ -12,11 +12,11 @@ axiosInstance.interceptors.request.use((config) => {
   //   config.headers.Authorization = `Bearer ${token}`;
   // }
   // return config;
-  const token = localStorage.getItem("token");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  // const token = localStorage.getItem("token");
+  //
+  // if (token) {
+  //   config.headers.Authorization = `Bearer ${token}`;
+  // }
 
   return config;
 });
