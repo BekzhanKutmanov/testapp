@@ -1,3 +1,6 @@
+'use client';
+
+import Box from "@mui/material/Box"
 import Button from '@mui/material/Button'
 import MenuItem from '@mui/material/MenuItem'
 import SendIcon from '@mui/icons-material/Send'
@@ -23,6 +26,18 @@ export default function Test() {
       <div className={'card bg-backgroundPaper p-3 rounded shadow-md'}>
         <p>loren</p>
       </div>
+
+      <Box
+        sx={(theme) => ({
+          backgroundColor:
+            theme.palette.mode === 'light' ? 'var(--myDarkColor)' : 'var(--myWhiteColor)',
+          color:
+            theme.palette.mode === 'light' ? 'var(--myWhiteColor)' : 'var(--myDarkColor)'
+        })}
+        className={'p-2 rounded'}
+      >
+        Контент
+      </Box>
 
       <Button variant='text'>Text</Button>
       <Button variant='contained' size={'medium'} color='success'>
@@ -51,6 +66,10 @@ export default function Test() {
       <BigSpinner />
       <MiniSpinner />
       <NotFound />
+
+      <div className='bg-backgroundPaper text-textPrimary p-4 rounded-md shadow-md mt-4'>
+        Тестовый блок, который автоматически меняет цвет в зависимости от темы
+      </div>
     </div>
   )
 }

@@ -3,5 +3,5 @@ interface MainTitleType {
 }
 
 export default function MainTitle({ title }: MainTitleType) {
-  return <h2 className={'text-2xl sm:text-3xl pb-2 font-bold'}>{title}</h2>
+  return <h2 className={'text-xl sm:text-2xl pb-2 font-bold'}>{title}</h2>
 }

@@ -10,7 +10,6 @@ export const getSubjects = async ()=> {
 }
 
 export const getShowSubject = async (id: number)=> {
-  console.log('this id ',id);
   const data = await apiRequest(axiosInstance.get( `/${id}`));
 
   console.log(data);
@@ -19,7 +18,6 @@ export const getShowSubject = async (id: number)=> {
 }
 
 export const addSubjects = async (newSubject) => {
-  console.log(newSubject)
   const data = await apiRequest(axiosInstance.post('', newSubject));
 
   console.log(data);
@@ -35,4 +33,11 @@ export const updateSubjects = async (name: string, id: number | null) => {
   return data;
 }
 
+export const deleteSubject = async (id: number | null) => {
+  const data = await apiRequest(axiosInstance.delete(`/${id}`))
+
+  console.log(data);
+
+  return data;
+}
 

@@ -1,39 +1,40 @@
-'use client';
+'use client'
 
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 
 import { MenuItem } from '@menu/vertical-menu'
 
-
 import ActionsMenu from '@/shared/ui/components/ActionsMenu'
 
 interface MenuItemType {
-  name: string,
-  id:number
+  data: {id: number, name: string}[],
+  onUpdate: (id: number)=> void,
+  onDelete: (id: number)=> void,
 }
 
-export default function NavigationSubjects ({data, onUpdate}: MenuItemType){
-
-  console.log(data)
-  return data?.map((item: {id: number, name: string}) => {
-      return <div key={item?.id} className={'flex items-center'}>
-        <MenuItem
-          href={`/teacher/${item?.id}`}
-        >
-          <span className={'max-w-[160px] text-nowrap overflow-hidden text-ellipsis block'}>{item?.name}</span>
+export default function NavigationSubjects({ data, onUpdate, onDelete }: MenuItemType) {
+  return data?.map((item: { id: number; name: string }) => {
+    return (
+      <div key={item?.id} className={'flex items-center justify-between'}>
+        <MenuItem href={`/teacher/${item?.id}`}>
+          <span className={'max-w-[170px] text-nowrap overflow-hidden text-ellipsis block'} title={item?.name}>
+            {item?.name}
+          </span>
         </MenuItem>
-        <ActionsMenu>
-          <MenuItem onClick={() => onUpdate(item?.id)}>
-            <EditIcon fontSize="small" style={{ marginRight: 8 }} />
-            Редактировать
-          </MenuItem>
 
-          <MenuItem onClick={() => console.log('delete')}>
-            <DeleteIcon fontSize="small" style={{ marginRight: 8 }} />
-            Удалить
-          </MenuItem>
+        <ActionsMenu icon={''} onClose={() => {}} onOpen={() => {}}>
+          <div className={'flex justify-center w-full p-3 cursor-pointer hover:bg-gray-100'}>
+            <EditIcon fontSize='small' onClick={() => onUpdate(item?.id)} style={{fontSize: '16px'}} />
+          </div>
+          {/*<span>Редактировать</span>*/}
+
+          <div className={'flex justify-center w-full p-3 cursor-pointer hover:bg-gray-100'}>
+            <DeleteIcon fontSize='small' onClick={() => onDelete(item?.id)} style={{fontSize: '16px'}} />
+            {/*<span>Удалить</span>*/}
+          </div>
         </ActionsMenu>
       </div>
-    })
+    )
+  })
 }

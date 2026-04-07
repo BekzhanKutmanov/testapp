@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 // React Imports
 import { useState } from 'react'
@@ -23,6 +23,7 @@ import ModeDropdown from '@components/layout/shared/ModeDropdown'
 import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
 
 import UserDropdown from '@components/layout/shared/UserDropdown'
+import MainTitle from '@/shared/ui/components/MainTitle'
 
 const NavbarContent = () => {
   // States
@@ -47,14 +48,19 @@ const NavbarContent = () => {
   }
 
   return (
-    <div className={classnames(verticalLayoutClasses.navbarContent, 'flex items-center justify-between gap-4 is-full')}>
+    <div
+      className={classnames(
+        verticalLayoutClasses.navbarContent,
+        'bg-backgroundPaper p-4 px-4 rounded-xl border-b-2 border-primary/20 flex items-center justify-between gap-4 is-full'
+      )}
+    >
       <div className='flex items-center gap-2 sm:gap-4'>
         <NavToggle />
         <div className={'hidden sm:flex items-center gap-2'}>
           {/*<div className={'w-[50px] h-[50px] flex justify-center items-start'}>*/}
           {/*  <img src={'/images/logo-remove.png'} className={'w-full object-fit'}/>*/}
           {/*</div>*/}
-          <h2 className={''}>Система тестирования ОшГУ</h2>
+          <h2 className={'   sm:text-3xl'}>Система тестирования ОшГУ</h2>
         </div>
       </div>
 
@@ -89,16 +95,21 @@ const NavbarContent = () => {
         {/*    </Menu>*/}
         {/*  </>*/}
         {/*) : (*/}
-          <>
-            <ModeDropdown />
-            <IconButton className='text-textPrimary'>
-              <i className='ri-notification-2-line' />
-            </IconButton>
-            {true ? <UserDropdown />
-             : <Button variant="contained" size={'medium'} color="error">Войти</Button>}
-            {/*<b className={'p-2 text-[1.1rem]'}>{getShortName('Кутманов Бекжан Райымкулови')}</b>*/}
-            {/*<i className='ri-logout-box-r-line cursor-pointer hover:bg-[gray]' onClick={()=> router.push('/login')} />*/}
-          </>
+        <>
+          <ModeDropdown />
+          <IconButton className='text-textPrimary'>
+            <i className='ri-notification-2-line' />
+          </IconButton>
+          {true ? (
+            <UserDropdown />
+          ) : (
+            <Button variant='contained' size={'medium'} color='error'>
+              Войти
+            </Button>
+          )}
+          {/*<b className={'p-2 text-[1.1rem]'}>{getShortName('Кутманов Бекжан Райымкулови')}</b>*/}
+          {/*<i className='ri-logout-box-r-line cursor-pointer hover:bg-[gray]' onClick={()=> router.push('/login')} />*/}
+        </>
         {/*)}*/}
       </div>
     </div>

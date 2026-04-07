@@ -1,14 +1,17 @@
 'use client';
 
-import { notFound, redirect, useParams } from 'next/navigation';
+import { useEffect } from 'react'
 
-import { getShowSubject, getSubjects } from '@/features/api/api'
-import NotFound from '@components/states/NotFound'
+import { useParams } from 'next/navigation';
+
 import { useQuery } from '@tanstack/react-query'
 
-interface PageProps {
-  params: { id: string };
-}
+import { enqueueSnackbar } from 'notistack'
+
+import BigSpinner from '@components/states/BigSpinner'
+import NotFound from '@components/states/NotFound'
+
+import { getShowSubject } from '@/features/api/api'
 
 export default function Subject() {
   const { id } = useParams();
@@ -18,9 +21,25 @@ export default function Subject() {
     queryFn: ()=> getShowSubject(Number(id)),
   });
 
+  useEffect(() => {
+    if (isError) {
+      enqueueSnackbar('Ошибка при получении предметов', { variant: 'error' })
+    }
+  }, [isError]);
+
+  if(isLoading) {
+    return <div className={'bg-backgroundPaper p-3 rounded flex justify-center items-center h-[100vh]'}><BigSpinner/></div>
+  }
+
+  if(isError){
+    return <div className={'bg-backgroundPaper p-3 rounded flex justify-center items-center h-[100vh]'}><NotFound/></div>
+  }
+
   return (
     <div>
       server - {data?.name}
+
+    {/*  data?.lenght < 1 ? <EmptyState> : data?.map...*/}
     </div>
   );
 }

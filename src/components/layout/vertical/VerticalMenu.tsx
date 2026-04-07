@@ -1,13 +1,20 @@
 'use client'
 
+import {useState} from 'react';
+
 // MUI Imports
-import { useRouter } from 'next/navigation'
+import {useParams, usePathname, useRouter } from 'next/navigation'
 
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useQueryClient } from '@tanstack/react-query'
 
-import { enqueueSnackbar } from 'notistack'
-
+import Button from '@mui/material/Button'
+import AddIcon from '@mui/icons-material/Add'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import TextField from '@mui/material/TextField'
 import Chip from '@mui/material/Chip'
 import { useTheme } from '@mui/material/styles'
 
@@ -18,22 +25,12 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import type { VerticalMenuContextProps } from '@menu/components/vertical-menu/Menu'
 
 // Component Imports
-import { Menu, SubMenu, MenuItem, MenuSection } from '@menu/vertical-menu'
+import { Menu, SubMenu, MenuItem } from '@menu/vertical-menu'
 
 // Hook Imports
 import useVerticalNav from '@menu/hooks/useVerticalNav'
 
-import { toastMessages } from '@/shared/constants/toastMessages'
-
-import { addSubjects, getSubjects, updateSubjects } from '@/features/api/api'
-
-import Button from '@mui/material/Button'
-import AddIcon from '@mui/icons-material/Add'
-import Dialog from '@mui/material/Dialog'
-import DialogTitle from '@mui/material/DialogTitle'
-import DialogContent from '@mui/material/DialogContent'
-import DialogActions from '@mui/material/DialogActions'
-import TextField from '@mui/material/TextField'
+import { addSubjects, deleteSubject, getSubjects, updateSubjects } from '@/features/api/api'
 
 // Styled Component Imports
 import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNavExpandIcon'
@@ -42,8 +39,6 @@ import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNav
 import menuItemStyles from '@core/styles/vertical/menuItemStyles'
 import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
 import NavigationSubjects from '@/features/components/NavigationSubjects'
-import { useEffect, useState } from 'react'
-import { router } from 'next/client'
 
 type RenderExpandIconProps = {
   open?: boolean
@@ -61,6 +56,10 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
   const theme = useTheme()
   const { isBreakpointReached, transitionDuration } = useVerticalNav()
 
+  const path = usePathname();
+
+  const params = useParams();
+
   const router = useRouter()
 
   const ScrollWrapper = isBreakpointReached ? 'div' : PerfectScrollbar
@@ -74,6 +73,8 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
   const [updateOpen, setUpdateOpen] = useState(false)
   const [newSubjectName, setNewSubjectName] = useState('')
   const [updateId, setUpdateId] = useState<number | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [currentIdForDelete, setCurrentIdForDelete] = useState<number | null>(null);
 
   const handleOpen = () => setOpen(true)
 
@@ -88,33 +89,28 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
     setNewSubjectName('')
   }
 
-  const { data, isLoading, isError } = useQuery({
+  const { data } = useQuery({
     queryKey: ['subjectKey'], // Уникальный ключ для кэширования
     queryFn: getSubjects
   })
 
-  useEffect(() => {
-    console.log(data)
-  }, [data])
-
   const postMutation = useMutation({
-    mutationFn: newSubject => addSubjects(newSubject), // POST
+    mutationFn: (newSubject: {name: string}) => addSubjects(newSubject), // POST
 
     onSuccess: async () => {
-      console.log('success')
-      // 1. сохраняем старые данные ДО обновления
-
-      const oldData = queryClient.getQueryData(['subjectKey']) || []
+      const oldData:[{id: number, name: string}] | [] = queryClient.getQueryData(['subjectKey']) || []
 
       // 2. обновляем список (делает GET)
-      await queryClient.invalidateQueries(['subjectKey'])
+      await queryClient.invalidateQueries({
+        queryKey: ['subjectKey']
+      });
 
       // 3. берём новые данные
-      const newData = queryClient.getQueryData(['subjectKey']) || []
+      const newData: [{id: number, name: string}] | [] = queryClient.getQueryData(['subjectKey']) || []
 
       // 4. ищем новый элемент
-      const oldIds = new Set(oldData.map(s => s.id))
-      const newItem = newData.find(s => !oldIds.has(s.id))
+      const oldIds = new Set(oldData?.map(s => s?.id))
+      const newItem = newData?.find(s => !oldIds.has(s.id))
 
       if (newItem) {
         router.push(`/teacher/${newItem.id}`)
@@ -129,8 +125,8 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
   })
 
   const handleSave = () => {
-    postMutation.mutate({ name: subjectName })
-    handleClose()
+    postMutation.mutate({ name: subjectName });
+    handleClose();
   }
 
   const updateMutation = useMutation({
@@ -158,6 +154,35 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
     handleUpdateClose()
   }
 
+  // delete
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteSubject(currentIdForDelete),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subjectKey'] });
+
+      if(path){
+        const regex = /\bteacher\b/i;
+
+        if(regex.test(path) && params?.id === String(currentIdForDelete)){
+          router.push(`/teacher/`);
+        }
+      }
+    },
+
+    onError: err => {
+      console.error(err)
+    }
+  })
+
+  const onConfirm = () => {
+    deleteMutation.mutate();
+  }
+
+  const onConfirmClose = () => {
+    setConfirmOpen(false);
+  }
+
   return (
     <>
       <ScrollWrapper
@@ -181,53 +206,9 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           menuSectionStyles={menuSectionStyles(theme)}
           className={'mt-2'}
         >
-          {/*<MenuSection label=''>*/}
-          <MenuItem
-            href={`${process.env.NEXT_PUBLIC_PRO_URL}/apps/email`}
-            icon={<i className='ri-mail-open-line' />}
-            suffix={<Chip label='Pro' size='small' color='primary' variant='tonal' />}
-            target='_blank'
-          >
-            Email
-          </MenuItem>
-          <MenuItem
-            href={`${process.env.NEXT_PUBLIC_PRO_URL}/apps/chat`}
-            icon={<i className='ri-wechat-line' />}
-            suffix={<Chip label='Pro' size='small' color='primary' variant='tonal' />}
-            target='_blank'
-          >
-            Chat
-          </MenuItem>
-          <MenuItem
-            href={`${process.env.NEXT_PUBLIC_PRO_URL}/apps/calendar`}
-            icon={<i className='ri-calendar-line' />}
-            suffix={<Chip label='Pro' size='small' color='primary' variant='tonal' />}
-            target='_blank'
-          >
-            Calendar
-          </MenuItem>
-          <MenuItem
-            href={`${process.env.NEXT_PUBLIC_PRO_URL}/apps/kanban`}
-            icon={<i className='ri-drag-drop-line' />}
-            suffix={<Chip label='Pro' size='small' color='primary' variant='tonal' />}
-            target='_blank'
-          >
-            Kanban
-          </MenuItem>
           <MenuItem href='/account-settings' icon={<i className='ri-user-settings-line' />}>
             Account Settings
           </MenuItem>
-          <SubMenu label='Auth Pages' icon={<i className='ri-shield-keyhole-line' />}>
-            <MenuItem href='/login' target='_blank'>
-              Login
-            </MenuItem>
-            <MenuItem href='/register' target='_blank'>
-              Register
-            </MenuItem>
-            <MenuItem href='/forgot-password' target='_blank'>
-              Forgot Password
-            </MenuItem>
-          </SubMenu>
           <SubMenu label='Miscellaneous' icon={<i className='ri-question-line' />}>
             <MenuItem href='/error' target='_blank'>
               Error
@@ -246,14 +227,8 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
             icon={<i className='ri-home-smile-line' />}
             suffix={<Chip label='5' size='small' color='error' />}
           >
-            <MenuItem
-              href={`${process.env.NEXT_PUBLIC_PRO_URL}/dashboards/crm`}
-              suffix={<Chip label='Pro' size='small' color='primary' variant='tonal' />}
-              target='_blank'
-            >
-              CRM
-            </MenuItem>
-            <MenuItem href='/'>Analytics</MenuItem>
+            {/* Скрытый MenuItem для того чтобы SubMenu оставалось открытым при нахождении на страницах /teacher/* */}
+            <MenuItem href='/teacher' exactMatch={false} activeUrl='/teacher' className='hidden' />
 
             {data && data?.length ? (
               <NavigationSubjects
@@ -262,11 +237,22 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
                   setUpdateId(id)
                   setUpdateOpen(true)
                 }}
+                onDelete={(id: number) => {
+                  setCurrentIdForDelete(id);
+                  setConfirmOpen(true);
+                }}
               />
             ) : (
-              ''
+              <div className={'text-red-500 px-3 my-4 w-full flex justify-center'}>Повторите позже</div>
             )}
 
+            <div className={'flex items-center justify-center my-2'}>
+              <Button variant='contained' size={'small'} startIcon={<AddIcon />} onClick={handleOpen}>
+                Новый предмет
+              </Button>
+            </div>
+
+          </SubMenu>
             {/*<MenuItem*/}
             {/*  href={`${process.env.NEXT_PUBLIC_PRO_URL}/dashboards/ecommerce`}*/}
             {/*  suffix={<Chip label='Pro' size='small' color='primary' variant='tonal' />}*/}
@@ -281,10 +267,6 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
             {/*>*/}
             {/*  Logistics*/}
             {/*</MenuItem>*/}
-          </SubMenu>
-          <Button variant='outlined' startIcon={<AddIcon />} onClick={handleOpen}>
-            Новый предмет
-          </Button>
         </Menu>
       </ScrollWrapper>
 
@@ -333,6 +315,26 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           </Button>
         </DialogActions>
       </Dialog>
+
+    <Dialog open={confirmOpen} onClose={onConfirmClose}>
+      <DialogTitle>Вы точно хотите удалить?</DialogTitle>
+
+      <DialogActions>
+        <Button onClick={onConfirmClose}>
+          Отмена
+        </Button>
+
+        <Button
+          color="error"
+          onClick={() => {
+            onConfirmClose();
+            onConfirm();
+          }}
+        >
+          Удалить
+        </Button>
+      </DialogActions>
+    </Dialog>
     </>
   )
 }
