@@ -14,12 +14,12 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
         queryCache: new QueryCache({
           // Глобальный перехват ошибок из твоего apiRequest
           onError: (error: any) => {
-            enqueueSnackbar(error.message || 'Ошибка', { variant: 'error' })
+            enqueueSnackbar(error?.responce?.data?.message || 'Ошибка', { variant: 'error' })
           }
         }),
         mutationCache: new MutationCache({
           onError: (error: any) => {
-            enqueueSnackbar(error.message || 'Ошибка при выполнении действия', { variant: 'error' });
+            enqueueSnackbar(error?.message || 'Ошибка при выполнении действия', { variant: 'error' });
           },
         }),
         defaultOptions: {

@@ -2,11 +2,15 @@
 
 // React Imports
 import { useState } from 'react'
-import type { FormEvent } from 'react'
 
 // Next Imports
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+
+import { useMutation } from '@tanstack/react-query'
+
+// React Hook Form Imports
+import { useForm, Controller } from 'react-hook-form'
 
 // MUI Imports
 import Card from '@mui/material/Card'
@@ -15,27 +19,37 @@ import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
 import IconButton from '@mui/material/IconButton'
 import InputAdornment from '@mui/material/InputAdornment'
-import Checkbox from '@mui/material/Checkbox'
 import Button from '@mui/material/Button'
-import FormControlLabel from '@mui/material/FormControlLabel'
-import Divider from '@mui/material/Divider'
+import { enqueueSnackbar } from 'notistack'
 
 // Type Imports
 import type { Mode } from '@core/types'
 
 // Component Imports
-import Logo from '@components/layout/shared/Logo'
 import Illustrations from '@components/Illustrations'
 
-// Config Imports
-import themeConfig from '@configs/themeConfig'
-
-// Hook Imports
+// Hook Import
 import { useImageVariant } from '@core/hooks/useImageVariant'
+
+import { adToken, getLogin } from '@/shared/api/auth/auth'
+import { toastMessages } from '@/shared/constants/toastMessages'
 
 const Login = ({ mode }: { mode: Mode }) => {
   // States
   const [isPasswordShown, setIsPasswordShown] = useState(false)
+
+  // React Hook Form
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid }
+  } = useForm({
+    mode: 'onChange',
+    defaultValues: {
+      email: '',
+      password: ''
+    }
+  })
 
   // Vars
   const darkImg = '/images/pages/auth-v1-mask-dark.png'
@@ -47,75 +61,100 @@ const Login = ({ mode }: { mode: Mode }) => {
 
   const handleClickShowPassword = () => setIsPasswordShown(show => !show)
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    router.push('/')
+  const postMutation = useMutation({
+    mutationFn: (data: any) => adToken(data.email, data.password), // POST
+
+    onSuccess: async () => {
+      try {
+        const getData = await getLogin() // GET
+        console.log(getData)
+        if (getData) {
+          enqueueSnackbar(toastMessages.auth.loginSuccess, { variant: 'success' })
+        }
+      } catch (err) {
+        enqueueSnackbar(toastMessages.auth.loginError, { variant: 'error' })
+      }
+    },
+
+    onError: err => {
+      console.error(err)
+    }
+  })
+
+  const onSubmit = (data: any) => {
+    postMutation.mutate(data)
   }
+
+  // Регулярное выражение для опасных символов
+  const unsafeCharsRegex = /[<>{}[\]"']/
 
   return (
     <div className='flex flex-col justify-center items-center min-bs-[100dvh] relative p-6'>
       <Card className='flex flex-col sm:is-[450px]'>
-        <CardContent className='p-6 sm:!p-12'>
-          <Link href='/' className='flex justify-center items-center mbe-6'>
-            <Logo />
+        <CardContent className='p-6 sm:!px-12 sm:!py-9'>
+          <Link href='/' className='flex justify-center items-center mbe-4'>
+            Система тестирование ОшГУ
           </Link>
           <div className='flex flex-col gap-5'>
             <div>
-              <Typography variant='h4'>{`Welcome to ${themeConfig.templateName}!👋🏻`}</Typography>
-              <Typography className='mbs-1'>Please sign-in to your account and start the adventure</Typography>
+              <Typography className={'test-sm'} variant='h4'>{`Добро пожаловать в Test App!👋🏻`}</Typography>
             </div>
-            <form noValidate autoComplete='off' onSubmit={handleSubmit} className='flex flex-col gap-5'>
-              <TextField autoFocus fullWidth label='Email' />
-              <TextField
-                fullWidth
-                label='Password'
-                id='outlined-adornment-password'
-                type={isPasswordShown ? 'text' : 'password'}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position='end'>
-                      <IconButton
-                        size='small'
-                        edge='end'
-                        onClick={handleClickShowPassword}
-                        onMouseDown={e => e.preventDefault()}
-                      >
-                        <i className={isPasswordShown ? 'ri-eye-off-line' : 'ri-eye-line'} />
-                      </IconButton>
-                    </InputAdornment>
-                  )
+            <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
+              <Controller
+                name='email'
+                control={control}
+                rules={{
+                  required: 'Логин обязателен',
+                  validate: value => !unsafeCharsRegex.test(value) || 'Используются недопустимые символы'
                 }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    autoFocus
+                    fullWidth
+                    label='AVN логин'
+                    error={!!errors.email}
+                    helperText={errors.email ? (errors.email.message as string) : ''}
+                  />
+                )}
               />
-              <div className='flex justify-between items-center gap-x-3 gap-y-1 flex-wrap'>
-                <FormControlLabel control={<Checkbox />} label='Remember me' />
-                <Typography className='text-end' color='primary' component={Link} href='/forgot-password'>
-                  Forgot password?
-                </Typography>
-              </div>
-              <Button fullWidth variant='contained' type='submit'>
-                Log In
+
+              <Controller
+                name='password'
+                control={control}
+                rules={{
+                  required: 'Пароль обязателен',
+                  validate: value => !unsafeCharsRegex.test(value) || 'Используются недопустимые символы'
+                }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    label='Пароль'
+                    type={isPasswordShown ? 'text' : 'password'}
+                    error={!!errors.password}
+                    helperText={errors.password ? (errors.password.message as string) : ''}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position='end'>
+                          <IconButton
+                            size='small'
+                            edge='end'
+                            onClick={handleClickShowPassword}
+                            onMouseDown={e => e.preventDefault()}
+                          >
+                            <i className={isPasswordShown ? 'ri-eye-off-line' : 'ri-eye-line'} />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                )}
+              />
+
+              <Button fullWidth variant='contained' type='submit' disabled={!isValid || postMutation.isPending}>
+                Войти
               </Button>
-              <div className='flex justify-center items-center flex-wrap gap-2'>
-                <Typography>New on our platform?</Typography>
-                <Typography component={Link} href='/register' color='primary'>
-                  Create an account
-                </Typography>
-              </div>
-              <Divider className='gap-3'>or</Divider>
-              <div className='flex justify-center items-center gap-2'>
-                <IconButton size='small' className='text-facebook'>
-                  <i className='ri-facebook-fill' />
-                </IconButton>
-                <IconButton size='small' className='text-twitter'>
-                  <i className='ri-twitter-fill' />
-                </IconButton>
-                <IconButton size='small' className='text-github'>
-                  <i className='ri-github-fill' />
-                </IconButton>
-                <IconButton size='small' className='text-googlePlus'>
-                  <i className='ri-google-fill' />
-                </IconButton>
-              </div>
             </form>
           </div>
         </CardContent>

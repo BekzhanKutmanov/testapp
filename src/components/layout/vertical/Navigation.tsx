@@ -64,12 +64,14 @@ const Navigation = () => {
     // Sidebar Vertical Menu
     <VerticalNav customStyles={navigationCustomStyles(theme)}>
       {/* Nav Header including Logo & nav toggle icons  */}
-      <NavHeader>
-        <Link href='/'>
-          <Logo />
-        </Link>
-        {isBreakpointReached && <i className='ri-close-line text-xl' onClick={() => toggleVerticalNav(false)} />}
-      </NavHeader>
+      {/*<NavHeader>*/}
+        {/*<Link href='/'>*/}
+        {/*  <Logo />*/}
+        {/*</Link>*/}
+      {/*</NavHeader>*/}
+      {isBreakpointReached && <div className={'w-full flex justify-end p-3'}>
+        <i className='ri-close-line text-xl' onClick={() => toggleVerticalNav(false)} />
+      </div>}
       <StyledBoxForShadow ref={shadowRef} />
       <VerticalMenu scrollMenu={scrollMenu} />
     </VerticalNav>

@@ -8,14 +8,21 @@ type StyledMainProps = {
   isContentCompact: boolean
 }
 
-const StyledMain = styled.main<StyledMainProps>`
-  padding: ${themeConfig.layoutPadding}px;
-  ${({ isContentCompact }) =>
-    isContentCompact &&
-    `
-    margin-inline: auto;
-    max-inline-size: ${themeConfig.compactContentWidth}px;
-  `}
-`
+const StyledMain = styled.main<StyledMainProps>(({ isContentCompact }) => ({
+  padding: themeConfig.layoutPadding,
+
+  ...(isContentCompact && {
+    marginInline: 'auto',
+    maxInlineSize: themeConfig.compactContentWidth
+  }),
+
+  '@media (max-width: 768px)': {
+    padding: 16
+  },
+
+  '@media (max-width: 480px)': {
+    padding: 12
+  }
+}))
 
 export default StyledMain

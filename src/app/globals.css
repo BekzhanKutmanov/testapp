@@ -14,6 +14,12 @@
   --search-z-index: var(--mui-zIndex-tooltip);
   --drawer-z-index: var(--mui-zIndex-drawer);
   --backdrop-color: rgb(var(--mui-mainColorChannels-light) / 0.5);
+
+  --custom-component-color: #128fd8;
+  --custom-component-hover: #35a9e8;
+
+  --myWhiteColor: #FFFFFF;
+  --myDarkColor: #312D4B;
 }
 
 [data-mui-color-scheme='dark'] {
