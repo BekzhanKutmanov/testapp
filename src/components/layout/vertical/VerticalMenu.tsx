@@ -246,7 +246,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
               <div className={'text-red-500 px-3 my-4 w-full flex justify-center'}>Повторите позже</div>
             )}
 
-            <div className={'flex items-center justify-center my-2'}>
+            <div className={'flex items-center justify-center mt-4 mb-2'}>
               <Button variant='contained' size={'small'} startIcon={<AddIcon />} onClick={handleOpen}>
                 Новый предмет
               </Button>
