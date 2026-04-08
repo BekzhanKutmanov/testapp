@@ -1,6 +1,6 @@
 'use client';
 
-import Box from "@mui/material/Box"
+import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import MenuItem from '@mui/material/MenuItem'
 import SendIcon from '@mui/icons-material/Send'
@@ -13,10 +13,13 @@ import CustomSelect from '@/shared/ui/components/CustomSelect'
 import BigSpinner from '@components/states/BigSpinner'
 import MiniSpinner from '@components/states/MiniSpinner'
 import NotFound from '@components/states/NotFound'
+import Face from '@/features/components/Face'
 
 export default function Test() {
   return (
     <div>
+      <Face/>
+
       <h1>Список пользователей</h1>
 
       <p>p element</p>
@@ -28,11 +31,9 @@ export default function Test() {
       </div>
 
       <Box
-        sx={(theme) => ({
-          backgroundColor:
-            theme.palette.mode === 'light' ? 'var(--myDarkColor)' : 'var(--myWhiteColor)',
-          color:
-            theme.palette.mode === 'light' ? 'var(--myWhiteColor)' : 'var(--myDarkColor)'
+        sx={theme => ({
+          backgroundColor: theme.palette.mode === 'light' ? 'var(--myDarkColor)' : 'var(--myWhiteColor)',
+          color: theme.palette.mode === 'light' ? 'var(--myWhiteColor)' : 'var(--myDarkColor)'
         })}
         className={'p-2 rounded'}
       >
