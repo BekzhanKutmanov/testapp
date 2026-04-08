@@ -167,11 +167,11 @@ export default function TestListClient({id}: {id: string}) {
   );
 
   if(isLoading) {
-    return <div className={'bg-backgroundPaper p-3 rounded flex justify-center items-center h-[100vh]'}><BigSpinner/></div>
+    return <div className={'p-3 rounded flex justify-center items-center h-[100vh]'}><BigSpinner/></div>
   }
 
   if(isError){
-    return <div className={'bg-backgroundPaper p-3 rounded flex justify-center items-center h-[100vh]'}><NotFound/></div>
+    return <div className={'p-3 rounded flex justify-center items-center h-[100vh]'}><NotFound/></div>
   }
 
   return (

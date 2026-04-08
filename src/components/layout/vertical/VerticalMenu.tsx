@@ -89,9 +89,9 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
     setNewSubjectName('')
   }
 
-  const { data } = useQuery({
+  const { data, isError } = useQuery({
     queryKey: ['subjectKey'], // Уникальный ключ для кэширования
-    queryFn: getSubjects
+    queryFn: getSubjects,
   })
 
   const postMutation = useMutation({
@@ -206,19 +206,11 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           menuSectionStyles={menuSectionStyles(theme)}
           className={'mt-2'}
         >
-          <MenuItem href='/account-settings' icon={<i className='ri-user-settings-line' />}>
-            Account Settings
+          <MenuItem href='/card-basic' icon={<i className='ri-home-smile-line' />}>
+            Панель управления
           </MenuItem>
-          <SubMenu label='Miscellaneous' icon={<i className='ri-question-line' />}>
-            <MenuItem href='/error' target='_blank'>
-              Error
-            </MenuItem>
-            <MenuItem href='/under-maintenance' target='_blank'>
-              Under Maintenance
-            </MenuItem>
-          </SubMenu>
           <MenuItem href='/card-basic' icon={<i className='ri-bar-chart-box-line' />}>
-            Cards
+            Планирование
           </MenuItem>
           {/*</MenuSection>*/}
 
@@ -230,7 +222,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
             {/* Скрытый MenuItem для того чтобы SubMenu оставалось открытым при нахождении на страницах /teacher/* */}
             <MenuItem href='/teacher' exactMatch={false} activeUrl='/teacher' className='hidden' />
 
-            {data && data?.length ? (
+            {!isError ? (
               <NavigationSubjects
                 data={data || []}
                 onUpdate={id => {
