@@ -75,6 +75,7 @@ const CreateTestClient = () => {
 
   const addQuestion = useCallback(() => {
     const newId = generateId('q')
+
     const newQuestion: Question = {
       id: newId,
       title: '',
@@ -85,7 +86,9 @@ const CreateTestClient = () => {
       ],
       correctOptionIds: []
     }
+
     setQuestions(prev => [...prev, newQuestion])
+
   }, [])
 
   const deleteQuestion = (id: string) => {
@@ -100,7 +103,9 @@ const CreateTestClient = () => {
     // Мапим старые ID правильных ответов на новые
     const newCorrectIds = question.correctOptionIds.map(oldId => {
       const oldIndex = question.options.findIndex(o => o.id === oldId);
+
       return oldIndex !== -1 ? newOptions[oldIndex].id : '';
+
     }).filter(id => id !== '');
 
     const duplicated: Question = {
@@ -230,11 +235,7 @@ const CreateTestClient = () => {
   },[questions]);
 
   return (
-    <Container
-      maxWidth={false}
-      sx={{ py: 4, maxWidth: '1800px', px: { xs: 0, sm: 2, md: 4 }
-      }}
-    >
+    <Container maxWidth={false} sx={{ py: 4, maxWidth: '1800px', px: { xs: 0, sm: 2, md: 4 } }}>
       <Stack spacing={3}>
         <Paper
           elevation={0}
@@ -250,10 +251,10 @@ const CreateTestClient = () => {
         >
           <TextField
             fullWidth
-            variant="standard"
-            placeholder="Название теста"
+            variant='standard'
+            placeholder='Название теста'
             value={testTitle}
-            onChange={(e) => setTestTitle(e.target.value)}
+            onChange={e => setTestTitle(e.target.value)}
             InputProps={{
               disableUnderline: true,
               style: { fontSize: '1.8rem', fontWeight: 700 }
@@ -262,11 +263,11 @@ const CreateTestClient = () => {
           />
           <TextField
             fullWidth
-            variant="standard"
-            placeholder="Описание теста..."
+            variant='standard'
+            placeholder='Описание теста...'
             multiline
             value={testDescription}
-            onChange={(e) => setTestDescription(e.target.value)}
+            onChange={e => setTestDescription(e.target.value)}
             InputProps={{
               disableUnderline: true,
               style: { fontSize: '1rem' }
@@ -279,64 +280,74 @@ const CreateTestClient = () => {
             <Fade in key={question.id}>
               <Card
                 draggable
-                onDragStart={(e) => onDragStart(e, index)}
-                onDragOver={(e) => onDragOver(e, index)}
+                onDragStart={e => onDragStart(e, index)}
+                onDragOver={e => onDragOver(e, index)}
                 onDragEnd={onDragEnd}
                 sx={{
                   borderRadius: '12px',
                   overflow: 'visible',
                   border: '1px solid',
                   borderColor: draggedIndex === index ? 'primary.main' : 'divider',
-                  boxShadow: draggedIndex === index ? '0px 8px 30px rgba(102, 108, 255, 0.15)' : '0px 2px 10px rgba(0, 0, 0, 0.03)',
+                  boxShadow:
+                    draggedIndex === index
+                      ? '0px 8px 30px rgba(102, 108, 255, 0.15)'
+                      : '0px 2px 10px rgba(0, 0, 0, 0.03)',
                   transition: '0.2s',
                   opacity: draggedIndex === index ? 0.6 : 1
                 }}
               >
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 0.5, color: 'text.disabled', cursor: 'grab' }}>
-                  <DragIndicatorIcon fontSize="small" />
+                <Box
+                  sx={{ display: 'flex', justifyContent: 'center', py: 0.5, color: 'text.disabled', cursor: 'grab' }}
+                >
+                  <DragIndicatorIcon fontSize='small' />
                 </Box>
 
                 <CardContent sx={{ px: { xs: 2, sm: 3, md: 4 }, py: '16px !important', pb: '24px !important' }}>
                   <Stack spacing={2.5}>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'flex-start' }}>
                       <Box sx={{ display: 'flex', gap: 1.5, flex: 1, minWidth: '300px' }}>
-                        <Typography variant="h6" sx={{ mt: 0.5, fontWeight: 700, minWidth: '25px', color: 'primary.main', fontSize: '1.1rem' }}>
+                        <Typography
+                          variant='h6'
+                          sx={{ mt: 0.5, fontWeight: 700, minWidth: '25px', color: 'primary.main', fontSize: '1.1rem' }}
+                        >
                           {index + 1}.
                         </Typography>
                         <TextField
                           fullWidth
-                          placeholder="Ваш вопрос"
-                          variant="outlined"
-                          size="small"
+                          placeholder='Ваш вопрос'
+                          variant='outlined'
+                          size='small'
                           value={question.title}
-                          onChange={(e) => handleQuestionTitleChange(question.id, e.target.value)}
+                          onChange={e => handleQuestionTitleChange(question.id, e.target.value)}
                           multiline
-                          sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px', fontSize: '1rem', fontWeight: 500 } }}
+                          sx={{
+                            '& .MuiOutlinedInput-root': { borderRadius: '10px', fontSize: '1rem', fontWeight: 500 }
+                          }}
                         />
                       </Box>
 
-                      <FormControl size="small" sx={{ minWidth: 200 }}>
+                      <FormControl size='small' sx={{ minWidth: 200 }}>
                         <Select
                           value={question.type}
-                          onChange={(e) => handleTypeChange(question.id, e.target.value as QuestionType)}
+                          onChange={e => handleTypeChange(question.id, e.target.value as QuestionType)}
                           sx={{ borderRadius: '10px' }}
                         >
-                          <MenuItem value="RADIO">
+                          <MenuItem value='RADIO'>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <RadioButtonCheckedIcon fontSize="small" color="action" />
-                              <Typography variant="body2">Один ответ</Typography>
+                              <RadioButtonCheckedIcon fontSize='small' color='action' />
+                              <Typography variant='body2'>Один ответ</Typography>
                             </Box>
                           </MenuItem>
-                          <MenuItem value="CHECKBOX">
+                          <MenuItem value='CHECKBOX'>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <CheckBoxIcon fontSize="small" color="action" />
-                              <Typography variant="body2">Несколько ответов</Typography>
+                              <CheckBoxIcon fontSize='small' color='action' />
+                              <Typography variant='body2'>Несколько ответов</Typography>
                             </Box>
                           </MenuItem>
-                          <MenuItem value="TEXT">
+                          <MenuItem value='TEXT'>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <ShortTextIcon fontSize="small" color="action" />
-                              <Typography variant="body2">Текстовый ответ</Typography>
+                              <ShortTextIcon fontSize='small' color='action' />
+                              <Typography variant='body2'>Текстовый ответ</Typography>
                             </Box>
                           </MenuItem>
                         </Select>
@@ -350,8 +361,8 @@ const CreateTestClient = () => {
                         <TextField
                           fullWidth
                           disabled
-                          variant="standard"
-                          placeholder="Текстовый ответ будет введен пользователем"
+                          variant='standard'
+                          placeholder='Текстовый ответ будет введен пользователем'
                           sx={{ fontStyle: 'italic' }}
                         />
                       </Box>
@@ -359,7 +370,7 @@ const CreateTestClient = () => {
                       <>
                         <Stack spacing={1}>
                           {question.options.map((option, optIndex) => {
-                            const isCorrect = question.correctOptionIds.includes(option.id);
+                            const isCorrect = question.correctOptionIds.includes(option.id)
 
                             return (
                               <Box
@@ -376,22 +387,22 @@ const CreateTestClient = () => {
                                   transition: '0.2s'
                                 }}
                               >
-                                <Tooltip title={isCorrect ? "Удалить из правильных" : "Отметить как правильный"}>
+                                <Tooltip title={isCorrect ? 'Удалить из правильных' : 'Отметить как правильный'}>
                                   {question.type === 'RADIO' ? (
                                     <Radio
-                                      size="small"
+                                      size='small'
                                       checked={isCorrect}
                                       onChange={() => handleCorrectToggle(question.id, option.id)}
-                                      color="success"
+                                      color='success'
                                       icon={<CheckCircleIcon sx={{ opacity: 0.2 }} />}
                                       checkedIcon={<CheckCircleIcon />}
                                     />
                                   ) : (
                                     <Checkbox
-                                      size="small"
+                                      size='small'
                                       checked={isCorrect}
                                       onChange={() => handleCorrectToggle(question.id, option.id)}
-                                      color="success"
+                                      color='success'
                                       icon={<CheckBoxIcon sx={{ opacity: 0.2 }} />}
                                       checkedIcon={<CheckBoxIcon />}
                                     />
@@ -399,30 +410,33 @@ const CreateTestClient = () => {
                                 </Tooltip>
                                 <TextField
                                   fullWidth
-                                  size="small"
-                                  variant="standard"
+                                  size='small'
+                                  variant='standard'
                                   placeholder={`Вариант ${optIndex + 1}`}
                                   value={option.text}
-                                  onChange={(e) => handleOptionTextChange(question.id, option.id, e.target.value)}
+                                  onChange={e => handleOptionTextChange(question.id, option.id, e.target.value)}
                                   InputProps={{ disableUnderline: true }}
-                                  sx={{ px: 1, '& .MuiInputBase-input': { fontWeight: isCorrect ? 600 : 400, fontSize: '0.95rem' } }}
+                                  sx={{
+                                    px: 1,
+                                    '& .MuiInputBase-input': { fontWeight: isCorrect ? 600 : 400, fontSize: '0.95rem' }
+                                  }}
                                 />
                                 <IconButton
                                   onClick={() => deleteOption(question.id, option.id)}
                                   disabled={question.options.length <= 2}
-                                  size="small"
+                                  size='small'
                                   sx={{ color: 'text.disabled', '&:hover': { color: 'error.main' } }}
                                 >
-                                  <DeleteOutlineIcon fontSize="small" />
+                                  <DeleteOutlineIcon fontSize='small' />
                                 </IconButton>
                               </Box>
-                            );
+                            )
                           })}
                         </Stack>
 
                         <Button
-                          variant="outlined"
-                          size="small"
+                          variant='outlined'
+                          size='small'
                           startIcon={<AddIcon />}
                           onClick={() => addOption(question.id)}
                           sx={{
@@ -445,19 +459,19 @@ const CreateTestClient = () => {
                 <Divider />
 
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5, p: 1 }}>
-                  <Tooltip title="Сделать копию">
-                    <IconButton onClick={() => duplicateQuestion(question)} size="small">
-                      <ContentCopyIcon fontSize="small" />
+                  <Tooltip title='Сделать копию'>
+                    <IconButton onClick={() => duplicateQuestion(question)} size='small'>
+                      <ContentCopyIcon fontSize='small' />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Удалить вопрос">
+                  <Tooltip title='Удалить вопрос'>
                     <IconButton
                       onClick={() => deleteQuestion(question.id)}
-                      color="error"
+                      color='error'
                       disabled={questions.length <= 1}
-                      size="small"
+                      size='small'
                     >
-                      <DeleteOutlineIcon fontSize="small" />
+                      <DeleteOutlineIcon fontSize='small' />
                     </IconButton>
                   </Tooltip>
                 </Box>
@@ -468,8 +482,8 @@ const CreateTestClient = () => {
 
         <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
           <Button
-            variant="contained"
-            size="medium"
+            variant='contained'
+            size='medium'
             startIcon={<AddIcon />}
             onClick={addQuestion}
             sx={{
@@ -488,10 +502,10 @@ const CreateTestClient = () => {
       </Stack>
 
       <Box sx={{ position: 'fixed', bottom: 40, right: 40 }}>
-        <Tooltip title="Сохранить весь тест" placement="left" arrow>
+        <Tooltip title='Сохранить весь тест' placement='left' arrow>
           <Fab
-            color="primary"
-            size="large"
+            color='primary'
+            size='large'
             onClick={handleSaveTest}
             sx={{ width: 60, height: 60, boxShadow: '0px 10px 30px rgba(102, 108, 255, 0.4)' }}
           >

@@ -42,7 +42,7 @@ export default function TestListClient({id}: {id: string}) {
   const [testToDeleteId, setTestToDeleteId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['subject', id], // Уникальный ключ для кэширования
+    queryKey: ['subject', id],
     queryFn: ()=> getShowSubject(Number(id)),
   });
 
@@ -111,7 +111,7 @@ export default function TestListClient({id}: {id: string}) {
           />
         ))
       ) : (
-        <Typography variant='body1' color='textSecondary' align='center' className='mt-10'>
+        <Typography variant='body1' color='textSecondary' align='center' className='mt-10 bg-backgroundPaper font-bold p-4 rounded text-md'>
           Тестов пока нет. Нажмите кнопку выше, чтобы создать первый тест.
         </Typography>
       )}

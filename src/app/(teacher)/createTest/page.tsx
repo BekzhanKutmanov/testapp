@@ -12,7 +12,7 @@ export default function CreateTestPage() {
   return (
     <Box>
       <div className={'sm:px-[1rem]'}>
-        <MainTitle title={'Создание нового теста'} />
+        <MainTitle title={'Создание нового теста'} /> 
       </div>
 
       <CreateTestClient />
