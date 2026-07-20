@@ -11,7 +11,7 @@ import Button from '@mui/material/Button'
 
 // Component Imports
 import Link from '@components/Link'
-import Form from '@components/Form'
+import Form from '@/shared/ui/components/Form'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'

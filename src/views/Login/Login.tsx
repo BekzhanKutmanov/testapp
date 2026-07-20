@@ -26,7 +26,7 @@ import { enqueueSnackbar } from 'notistack'
 import type { Mode } from '@core/types'
 
 // Component Imports
-import Illustrations from '@components/Illustrations'
+import Illustrations from '@views/Login/ui/Illustrations'
 
 // Hook Import
 import { useImageVariant } from '@core/hooks/useImageVariant'
@@ -92,7 +92,7 @@ const Login = ({ mode }: { mode: Mode }) => {
     <div className='flex flex-col justify-center items-center min-bs-[100dvh] relative p-6'>
       <Card className='flex flex-col sm:is-[450px]'>
         <CardContent className='p-6 sm:!px-12 sm:!py-9'>
-          <Link href='/' className='flex justify-center items-center mbe-4'>
+          <Link href='/public' className='flex justify-center items-center mbe-4'>
             Система тестирование ОшГУ
           </Link>
           <div className='flex flex-col gap-5'>

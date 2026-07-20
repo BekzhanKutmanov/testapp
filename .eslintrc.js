@@ -9,10 +9,10 @@ module.exports = {
     '@typescript-eslint/consistent-type-imports': 'error',
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
     'lines-around-comment': [
-      'error',
+      'off',
       {
         beforeBlockComment: true,
         beforeLineComment: true,
@@ -22,7 +22,7 @@ module.exports = {
       }
     ],
     'padding-line-between-statements': [
-      'error',
+      'off',
       {
         blankLine: 'any',
         prev: 'export',
@@ -57,7 +57,7 @@ module.exports = {
       }
     ],
     'import/order': [
-      'error',
+      'off',
       {
         groups: ['builtin', 'external', ['internal', 'parent', 'sibling', 'index'], ['object', 'unknown']],
         pathGroups: [

@@ -22,6 +22,12 @@ const RootLayout = ({ children }: ChildrenType) => {
 
   return (
     <html id='__next' dir={direction}>
+      <head>
+        <link
+          href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap'
+          rel='stylesheet'
+        />
+      </head>
       <body className='flex is-full min-bs-full flex-auto flex-col'>{children}</body>
     </html>
   )

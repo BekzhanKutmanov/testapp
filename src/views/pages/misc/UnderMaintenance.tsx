@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography'
 import type { Mode } from '@core/types'
 
 // Component Imports
-import Illustrations from '@components/Illustrations'
+import Illustrations from '@views/Login/ui/Illustrations'
 
 // Hook Imports
 import { useImageVariant } from '@core/hooks/useImageVariant'

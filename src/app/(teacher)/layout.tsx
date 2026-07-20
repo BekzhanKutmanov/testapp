@@ -6,10 +6,10 @@ import LayoutWrapper from '@layouts/LayoutWrapper'
 import VerticalLayout from '@layouts/VerticalLayout'
 
 // Component Imports
-import Providers from '@components/Providers'
-import Navigation from '@components/layout/vertical/Navigation'
-import Navbar from '@components/layout/vertical/Navbar'
-import VerticalFooter from '@components/layout/vertical/Footer'
+import Providers from '@/app/Providers'
+import Navigation from '@/widgets/vertical/Navigation'
+import Navbar from '@/widgets/vertical/Navbar'
+import VerticalFooter from '@/widgets/vertical/Footer'
 
 const Layout = async ({ children }: ChildrenType) => {
   // Vars

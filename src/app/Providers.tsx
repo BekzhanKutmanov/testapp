@@ -8,7 +8,7 @@ import ThemeProvider from '@components/theme'
 
 // Util Imports
 import { getMode, getSettingsFromCookie } from '@core/utils/serverHelpers'
-import QueryProvider from "@/shared/api/QueryClientProvider";
+import QueryProvider from '@/shared/api/QueryClientProvider'
 import StoreProvider from '@/features/StoreProvider'
 
 type Props = ChildrenType & {
@@ -24,17 +24,15 @@ const Providers = (props: Props) => {
   const settingsCookie = getSettingsFromCookie()
 
   return (
-    <VerticalNavProvider>
-      <SettingsProvider settingsCookie={settingsCookie} mode={mode}>
-        <StoreProvider>
-          <ThemeProvider direction={direction}>
-            <QueryProvider>
-              {children}
-            </QueryProvider>
-          </ThemeProvider>
-        </StoreProvider>
-      </SettingsProvider>
-    </VerticalNavProvider>
+    <QueryProvider>
+      <VerticalNavProvider>
+        <SettingsProvider settingsCookie={settingsCookie} mode={mode}>
+          <StoreProvider>
+            <ThemeProvider direction={direction}>{children}</ThemeProvider>
+          </StoreProvider>
+        </SettingsProvider>
+      </VerticalNavProvider>
+    </QueryProvider>
   )
 }
 

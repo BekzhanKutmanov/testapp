@@ -1,12 +1,16 @@
 'use client'
 
-import {useState} from 'react';
+import { useEffect, useState} from 'react';
 
 // MUI Imports
 import {useParams, usePathname, useRouter } from 'next/navigation'
 
+import {useDispatch, useSelector} from 'react-redux';
+
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useQueryClient } from '@tanstack/react-query'
+
+import { subjectSet } from '@/features/slices/subjectsSlice'
 
 import Button from '@mui/material/Button'
 import AddIcon from '@mui/icons-material/Add'
@@ -55,6 +59,9 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
   // Hooks
   const theme = useTheme()
   const { isBreakpointReached, transitionDuration } = useVerticalNav()
+
+  const dispatch = useDispatch()
+  const subjects = useSelector((state) => state.subjects.value)
 
   const path = usePathname();
 
@@ -182,6 +189,10 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
   const onConfirmClose = () => {
     setConfirmOpen(false);
   }
+
+  useEffect(()=> {
+    if(data) dispatch(subjectSet(data));
+  },[data]);
 
   return (
     <>

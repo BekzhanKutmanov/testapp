@@ -17,12 +17,12 @@ import classnames from 'classnames'
 
 // Component Imports
 import NavToggle from './NavToggle'
-import ModeDropdown from '@components/layout/shared/ModeDropdown'
+import ModeDropdown from '@/shared/ui/components/ModeDropdown'
 
 // Util Imports
 import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
 
-import UserDropdown from '@components/layout/shared/UserDropdown'
+import UserDropdown from '@/shared/ui/components/UserDropdown'
 import MainTitle from '@/shared/ui/components/MainTitle'
 
 const NavbarContent = () => {

@@ -19,17 +19,18 @@ import {
   DialogContentText
 } from '@mui/material'
 
-import BigSpinner from '@components/states/BigSpinner'
-import NotFound from '@components/states/NotFound'
+import { useSelector } from 'react-redux';
+
+import BigSpinner from '@/shared/ui/components/states/BigSpinner'
+import NotFound from '@/shared/ui/components/states/NotFound'
 
 import { getShowSubject } from '@/features/api/api'
 import TestCard from '@/features/components/TestCard'
 
-interface TestItem {
-  id: string;
-  name: string;
-  createdAt: string;
-}
+import { TestItem } from '@/types/subjects/TestItem'
+
+import MobileNavigationSubjects from '@/shared/ui/components/MobileNavigationSubjects'
+import useMediaQuery from '@menu/hooks/useMediaQuery'
 
 export default function TestListClient({id}: {id: string}) {
   const [tests, setTests] = useState<TestItem[]>([]);
@@ -38,7 +39,7 @@ export default function TestListClient({id}: {id: string}) {
   const [editName, setEditName] = useState('');
 
   // Состояние для подтверждения удаления
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirm] = useState(false);
   const [testToDeleteId, setTestToDeleteId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery({
@@ -46,11 +47,19 @@ export default function TestListClient({id}: {id: string}) {
     queryFn: ()=> getShowSubject(Number(id)),
   });
 
+  const isMedia = useMediaQuery('640px');
+
+  const subjects = useSelector(state => state.subjects.value)
+
   useEffect(() => {
     if (isError) {
       enqueueSnackbar('Ошибка при получении предметов', { variant: 'error' })
     }
   }, [isError]);
+
+  useEffect(()=> {
+    console.log(subjects);
+  },[subjects]);
 
   const handleAddTest = () => {
     const newTest: TestItem = {
@@ -77,14 +86,14 @@ export default function TestListClient({id}: {id: string}) {
 
   const handleDeleteClick = (id: string) => {
     setTestToDeleteId(id);
-    setIsDeleteConfirmOpen(true);
+    setIsDeleteConfirm(true);
   };
 
   const handleConfirmDelete = () => {
     if (testToDeleteId) {
       setTests(tests.filter(test => test.id !== testToDeleteId));
       enqueueSnackbar('Тест удален', { variant: 'info' });
-      setIsDeleteConfirmOpen(false);
+      setIsDeleteConfirm(false);
       setTestToDeleteId(null);
     }
   };
@@ -148,7 +157,7 @@ export default function TestListClient({id}: {id: string}) {
 
   // Рендер модального окна подтверждения удаления
   const renderDeleteConfirmModal = () => (
-    <Dialog open={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirmOpen(false)}>
+    <Dialog open={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirm(false)}>
       <DialogTitle>Подтверждение удаления</DialogTitle>
       <DialogContent>
         <DialogContentText>
@@ -156,7 +165,7 @@ export default function TestListClient({id}: {id: string}) {
         </DialogContentText>
       </DialogContent>
       <DialogActions className='pb-4 px-6'>
-        <Button onClick={() => setIsDeleteConfirmOpen(false)} color='inherit'>
+        <Button onClick={() => setIsDeleteConfirm(false)} color='inherit'>
           Отмена
         </Button>
         <Button onClick={handleConfirmDelete} variant='contained' color='error'>
@@ -177,9 +186,6 @@ export default function TestListClient({id}: {id: string}) {
   return (
     <Box className='p-4 md:p-6 w-full max-w-screen-xl mx-auto'>
       <Stack direction='row' justifyContent='space-between' alignItems='center' className='mb-6 flex-wrap gap-4'>
-        {/*<Typography variant='h5' className='font-bold'>*/}
-        {/*  {data?.name}*/}
-        {/*</Typography>*/}
         <span className={'text-xl sm:text-2xl font-bold'}>{data?.name}</span>
         <Button
           variant='contained'
@@ -194,6 +200,10 @@ export default function TestListClient({id}: {id: string}) {
       {renderTestList()}
       {renderEditModal()}
       {renderDeleteConfirmModal()}
+
+      {isMedia && subjects && subjects.length > 0 && (
+        <MobileNavigationSubjects data={subjects} onClose={() => {}}/>
+      )}
     </Box>
   );
 }

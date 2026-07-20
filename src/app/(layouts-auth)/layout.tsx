@@ -2,7 +2,7 @@
 import type { ChildrenType } from '@core/types'
 
 // Component Imports
-import Providers from '@components/Providers'
+import Providers from '@/app/Providers'
 import BlankLayout from '@layouts/BlankLayout'
 
 const Layout = ({ children }: ChildrenType) => {

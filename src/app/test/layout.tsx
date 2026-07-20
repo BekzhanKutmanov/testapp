@@ -17,13 +17,13 @@ const Layout = async ({ children }: ChildrenType) => {
 
   return (
     <Providers direction={direction}>
-      <LayoutWrapper
-        verticalLayout={
-          <VerticalLayout navigation={<Navigation />} navbar={<Navbar />} footer={<VerticalFooter />}>
+      {/*<LayoutWrapper*/}
+      {/*  verticalLayout={*/}
+      {/*    <VerticalLayout navigation={<Navigation />} navbar={<Navbar />} footer={<VerticalFooter />}>*/}
             {children}
-          </VerticalLayout>
-        }
-      />
+      {/*    </VerticalLayout>*/}
+      {/*  }*/}
+      {/*/>*/}
     </Providers>
   )
 }
