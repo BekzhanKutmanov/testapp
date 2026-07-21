@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import { useEffect, useState } from 'react'
 
@@ -19,7 +19,7 @@ import {
   DialogContentText
 } from '@mui/material'
 
-import { useSelector } from 'react-redux';
+import { useSelector } from 'react-redux'
 
 import BigSpinner from '@/shared/ui/components/states/BigSpinner'
 import NotFound from '@/shared/ui/components/states/NotFound'
@@ -27,27 +27,30 @@ import NotFound from '@/shared/ui/components/states/NotFound'
 import { getShowSubject } from '@/features/api/api'
 import TestCard from '@/features/components/TestCard'
 
-import { TestItem } from '@/types/subjects/TestItem'
+import type { TestItem } from '@/types/subjects/TestItem'
 
 import MobileNavigationSubjects from '@/shared/ui/components/MobileNavigationSubjects'
 import useMediaQuery from '@menu/hooks/useMediaQuery'
+import Image from 'next/image'
+import EmptyState from '@/shared/ui/components/states/EmptyState'
+import InfoBlock from '@/shared/ui/components/InfoBlock'
 
-export default function TestListClient({id}: {id: string}) {
-  const [tests, setTests] = useState<TestItem[]>([]);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingTest, setEditingTest] = useState<TestItem | null>(null);
-  const [editName, setEditName] = useState('');
+export default function TestListClient({ id }: { id: string }) {
+  const [tests, setTests] = useState<TestItem[]>([])
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editingTest, setEditingTest] = useState<TestItem | null>(null)
+  const [editName, setEditName] = useState('')
 
   // Состояние для подтверждения удаления
-  const [isDeleteConfirmOpen, setIsDeleteConfirm] = useState(false);
-  const [testToDeleteId, setTestToDeleteId] = useState<string | null>(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirm] = useState(false)
+  const [testToDeleteId, setTestToDeleteId] = useState<string | null>(null)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['subject', id],
-    queryFn: ()=> getShowSubject(Number(id)),
-  });
+    queryFn: () => getShowSubject(Number(id))
+  })
 
-  const isMedia = useMediaQuery('640px');
+  const isMedia = useMediaQuery('640px')
 
   const subjects = useSelector(state => state.subjects.value)
 
@@ -55,11 +58,11 @@ export default function TestListClient({id}: {id: string}) {
     if (isError) {
       enqueueSnackbar('Ошибка при получении предметов', { variant: 'error' })
     }
-  }, [isError]);
+  }, [isError])
 
-  useEffect(()=> {
-    console.log(subjects);
-  },[subjects]);
+  useEffect(() => {
+    console.log(subjects)
+  }, [subjects])
 
   const handleAddTest = () => {
     const newTest: TestItem = {
@@ -72,60 +75,73 @@ export default function TestListClient({id}: {id: string}) {
         hour: '2-digit',
         minute: '2-digit'
       })
-    };
+    }
 
-    setTests([...tests, newTest]);
-    enqueueSnackbar('Тест успешно создан', { variant: 'success' });
-  };
+    setTests([...tests, newTest])
+    enqueueSnackbar('Тест успешно создан', { variant: 'success' })
+  }
 
   const handleEditClick = (test: TestItem) => {
-    setEditingTest(test);
-    setEditName(test.name);
-    setIsEditModalOpen(true);
-  };
+    setEditingTest(test)
+    setEditName(test.name)
+    setIsEditModalOpen(true)
+  }
 
   const handleDeleteClick = (id: string) => {
-    setTestToDeleteId(id);
-    setIsDeleteConfirm(true);
-  };
+    setTestToDeleteId(id)
+    setIsDeleteConfirm(true)
+  }
 
   const handleConfirmDelete = () => {
     if (testToDeleteId) {
-      setTests(tests.filter(test => test.id !== testToDeleteId));
-      enqueueSnackbar('Тест удален', { variant: 'info' });
-      setIsDeleteConfirm(false);
-      setTestToDeleteId(null);
+      setTests(tests.filter(test => test.id !== testToDeleteId))
+      enqueueSnackbar('Тест удален', { variant: 'info' })
+      setIsDeleteConfirm(false)
+      setTestToDeleteId(null)
     }
-  };
+  }
 
   const handleSaveEdit = () => {
     if (editingTest) {
-      setTests(tests.map(t => t.id === editingTest.id ? { ...t, name: editName } : t));
-      setIsEditModalOpen(false);
-      setEditingTest(null);
-      enqueueSnackbar('Название теста изменено', { variant: 'success' });
+      setTests(tests.map(t => (t.id === editingTest.id ? { ...t, name: editName } : t)))
+      setIsEditModalOpen(false)
+      setEditingTest(null)
+      enqueueSnackbar('Название теста изменено', { variant: 'success' })
     }
-  };
+  }
 
   // Рендер блока списка тестов
   const renderTestList = () => (
     <Stack spacing={4}>
       {tests.length > 0 ? (
-        tests.map((test) => (
-          <TestCard
-            key={test.id}
-            test={test}
-            onEditClick={handleEditClick}
-            onDeleteClick={handleDeleteClick}
-          />
+        tests.map(test => (
+          <TestCard key={test.id} test={test} onEditClick={handleEditClick} onDeleteClick={handleDeleteClick} />
         ))
       ) : (
-        <Typography variant='body1' color='textSecondary' align='center' className='mt-10 bg-backgroundPaper font-bold p-4 rounded text-md'>
-          Тестов пока нет. Нажмите кнопку выше, чтобы создать первый тест.
-        </Typography>
+        <InfoBlock>
+            <>
+              <Box
+                sx={{
+                  backgroundColor: 'primary.lighter',
+                  color: 'primary.main',
+                  borderRadius: '50%',
+                  p: 2,
+                  mb: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Image alt={'Нет данных'} src={'/images/empty-box.png'} width={140} height={140} />
+              </Box>
+              <Typography variant='body1' color='' sx={{ mb: 4, maxWidth: 300 }}>
+                Тестов пока нет. Нажмите кнопку выше, чтобы создать первый тест.
+              </Typography>
+            </>
+        </InfoBlock>
       )}
     </Stack>
-  );
+  )
 
   // Рендер модального окна редактирования
   const renderEditModal = () => (
@@ -140,7 +156,7 @@ export default function TestListClient({id}: {id: string}) {
           fullWidth
           variant='outlined'
           value={editName}
-          onChange={(e) => setEditName(e.target.value)}
+          onChange={e => setEditName(e.target.value)}
           sx={{ mt: 2 }}
         />
       </DialogContent>
@@ -153,7 +169,7 @@ export default function TestListClient({id}: {id: string}) {
         </Button>
       </DialogActions>
     </Dialog>
-  );
+  )
 
   // Рендер модального окна подтверждения удаления
   const renderDeleteConfirmModal = () => (
@@ -173,20 +189,28 @@ export default function TestListClient({id}: {id: string}) {
         </Button>
       </DialogActions>
     </Dialog>
-  );
+  )
 
-  if(isLoading) {
-    return <div className={'p-3 rounded flex justify-center items-center h-[100vh]'}><BigSpinner/></div>
+  if (isLoading) {
+    return (
+      <div className={'p-3 rounded flex justify-center items-center h-[100vh]'}>
+        <BigSpinner />
+      </div>
+    )
   }
 
-  if(isError){
-    return <div className={'p-3 rounded flex justify-center items-center h-[100vh]'}><NotFound/></div>
+  if (isError) {
+    return (
+      <div className={'p-3 rounded flex justify-center items-center h-[100vh]'}>
+        <NotFound />
+      </div>
+    )
   }
 
   return (
-    <Box className='p-4 md:p-6 w-full max-w-screen-xl mx-auto'>
-      <Stack direction='row' justifyContent='space-between' alignItems='center' className='mb-6 flex-wrap gap-4'>
-        <span className={'text-xl sm:text-2xl font-bold'}>{data?.name}</span>
+    <Box className='p-2 md:p-4 w-full max-w-screen-xl mx-auto'>
+      <Stack direction='row' justifyContent='space-between' alignItems='center' className='mb-6 flex-wrap gap-3'>
+        <span className={'text-xl sm:text-2xl font-bold sm:max-w-3xl sm:text-nowrap sm:overflow-hidden sm:text-ellipsis block'}>{data?.name}</span>
         <Button
           variant='contained'
           color='primary'
@@ -197,13 +221,11 @@ export default function TestListClient({id}: {id: string}) {
         </Button>
       </Stack>
 
-      {renderTestList()}
+      <Box className={'max-w-5xl m-auto'}>{renderTestList()}</Box>
       {renderEditModal()}
       {renderDeleteConfirmModal()}
 
-      {isMedia && subjects && subjects.length > 0 && (
-        <MobileNavigationSubjects data={subjects} onClose={() => {}}/>
-      )}
+      {isMedia && subjects && subjects.length > 0 && <MobileNavigationSubjects data={subjects} onClose={() => {}} />}
     </Box>
-  );
+  )
 }

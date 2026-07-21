@@ -17,11 +17,11 @@ const StyledMain = styled.main<StyledMainProps>(({ isContentCompact }) => ({
   }),
 
   '@media (max-width: 768px)': {
-    padding: 16
+    padding: 14
   },
 
   '@media (max-width: 480px)': {
-    padding: 12
+    padding: 10
   }
 }))
 
