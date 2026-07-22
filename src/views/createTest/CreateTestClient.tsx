@@ -32,6 +32,10 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import ShortTextIcon from '@mui/icons-material/ShortText'
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked'
+import { usePathname } from 'next/navigation'
+import { buildBreadcrumbs } from '@/shared/lib/breadcrumbs/buildBreadcrumbs'
+import Link from 'next/link'
+import { BreadCrumbType } from '@/shared/model/types/BreadCrumbType'
 
 type QuestionType = 'RADIO' | 'CHECKBOX' | 'TEXT';
 
@@ -51,6 +55,7 @@ interface Question {
 const CreateTestClient = () => {
   const [testTitle, setTestTitle] = useState('')
   const [testDescription, setTestDescription] = useState('')
+  const [breadCrumb, setBreadCrumb] = useState<BreadCrumbType[] | null>(null);
 
   const [questions, setQuestions] = useState<Question[]>([
     {
@@ -66,6 +71,16 @@ const CreateTestClient = () => {
   ])
 
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  const pathname = usePathname();
+
+  useEffect(()=> {
+    const r = buildBreadcrumbs(pathname);
+    console.log(r)
+    if(r) {
+      setBreadCrumb(r);
+    }
+  },[]);
 
   useEffect(() => {
     const order = questions.map(q => q.id);
@@ -236,6 +251,11 @@ const CreateTestClient = () => {
 
   return (
     <Container maxWidth={false} sx={{ py: 4, maxWidth: '1800px', px: { xs: 0, sm: 2, md: 4 } }}>
+      {breadCrumb?.map((item)=> {
+        return <div key={item?.label}>
+          <Link href={item?.href}>{item?.label}</Link>
+        </div>
+      })}
       <Stack spacing={3}>
         <Paper
           elevation={0}

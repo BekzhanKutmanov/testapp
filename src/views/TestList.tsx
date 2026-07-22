@@ -32,8 +32,8 @@ import type { TestItem } from '@/types/subjects/TestItem'
 import MobileNavigationSubjects from '@/shared/ui/components/MobileNavigationSubjects'
 import useMediaQuery from '@menu/hooks/useMediaQuery'
 import Image from 'next/image'
-import EmptyState from '@/shared/ui/components/states/EmptyState'
 import InfoBlock from '@/shared/ui/components/InfoBlock'
+import { usePathname } from 'next/navigation'
 
 export default function TestListClient({ id }: { id: string }) {
   const [tests, setTests] = useState<TestItem[]>([])
@@ -52,17 +52,79 @@ export default function TestListClient({ id }: { id: string }) {
 
   const isMedia = useMediaQuery('640px')
 
-  const subjects = useSelector(state => state.subjects.value)
+  const subjects = useSelector(state => state.subjects.value);
+
+  const pathname = usePathname();
+
+  type RouteNode = {
+    label?: string;
+    // literal-дети: конкретное имя сегмента
+    children?: Record<string, RouteNode>;
+    // если сегмент на этом уровне — параметр (id/slug/что угодно)
+    param?: RouteNode;
+  };
+
+  const routeTree: RouteNode = {
+    children: {
+      teacher: {
+        label: 'Home',
+        param: {
+          label: 'Subject',
+          children: {
+            createtest: {
+              label: 'Create',
+              param: { label: 'Test' },
+            },
+          },
+        },
+      }
+    },
+  };
+
+  function buildBreadcrumbs(pathname: string) {
+    const segments = pathname.split('/').filter(Boolean);
+    let node: RouteNode | undefined = routeTree;
+    let href = '';
+    const result: { href: string; label: string }[] = [];
+
+    for (const seg of segments) {
+      href += `/${seg}`;
+
+      if (node?.children?.[seg]) {
+        // это известный literal-сегмент
+        node = node.children[seg];
+      } else if (node?.param) {
+        // на этой позиции по схеме ожидается параметр — неважно, число это или slug
+        node = node.param;
+      } else {
+        // сегмент не описан схемой вообще
+        node = undefined;
+      }
+
+      if (node?.label) {
+        result.push({ href, label: node.label });
+      }
+    }
+
+    return result;
+  }
 
   useEffect(() => {
     if (isError) {
-      enqueueSnackbar('Ошибка при получении предметов', { variant: 'error' })
+      enqueueSnackbar('Ошибка при получении предметов', { variant: 'error' });
     }
-  }, [isError])
+  }, [isError]);
 
   useEffect(() => {
     console.log(subjects)
   }, [subjects])
+
+  useEffect(()=> {
+    console.log(pathname);
+    const r = buildBreadcrumbs(pathname);
+    console.log(r)
+  },[]);
+
 
   const handleAddTest = () => {
     const newTest: TestItem = {
@@ -120,6 +182,7 @@ export default function TestListClient({ id }: { id: string }) {
       ) : (
         <InfoBlock>
             <>
+
               <Box
                 sx={{
                   backgroundColor: 'primary.lighter',
