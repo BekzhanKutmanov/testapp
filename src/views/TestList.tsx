@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
 
@@ -34,16 +34,22 @@ import useMediaQuery from '@menu/hooks/useMediaQuery'
 import Image from 'next/image'
 import InfoBlock from '@/shared/ui/components/InfoBlock'
 import { usePathname } from 'next/navigation'
+import BreadCrumb from '@/shared/ui/BreadCrumb'
+import type { BreadCrumbType } from '@/shared/model/types/BreadCrumbType'
+import { buildBreadcrumbs } from '@/shared/lib/breadcrumbs/buildBreadcrumbs'
 
 export default function TestListClient({ id }: { id: string }) {
   const [tests, setTests] = useState<TestItem[]>([])
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingTest, setEditingTest] = useState<TestItem | null>(null)
   const [editName, setEditName] = useState('')
+  const [breadCrumb, setBreadCrumb] = useState<BreadCrumbType[] | null>(null);
 
   // Состояние для подтверждения удаления
   const [isDeleteConfirmOpen, setIsDeleteConfirm] = useState(false)
   const [testToDeleteId, setTestToDeleteId] = useState<string | null>(null)
+
+  const pathname = usePathname();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['subject', id],
@@ -53,8 +59,6 @@ export default function TestListClient({ id }: { id: string }) {
   const isMedia = useMediaQuery('640px')
 
   const subjects = useSelector(state => state.subjects.value);
-
-  const pathname = usePathname();
 
   type RouteNode = {
     label?: string;
@@ -81,34 +85,6 @@ export default function TestListClient({ id }: { id: string }) {
     },
   };
 
-  function buildBreadcrumbs(pathname: string) {
-    const segments = pathname.split('/').filter(Boolean);
-    let node: RouteNode | undefined = routeTree;
-    let href = '';
-    const result: { href: string; label: string }[] = [];
-
-    for (const seg of segments) {
-      href += `/${seg}`;
-
-      if (node?.children?.[seg]) {
-        // это известный literal-сегмент
-        node = node.children[seg];
-      } else if (node?.param) {
-        // на этой позиции по схеме ожидается параметр — неважно, число это или slug
-        node = node.param;
-      } else {
-        // сегмент не описан схемой вообще
-        node = undefined;
-      }
-
-      if (node?.label) {
-        result.push({ href, label: node.label });
-      }
-    }
-
-    return result;
-  }
-
   useEffect(() => {
     if (isError) {
       enqueueSnackbar('Ошибка при получении предметов', { variant: 'error' });
@@ -120,11 +96,12 @@ export default function TestListClient({ id }: { id: string }) {
   }, [subjects])
 
   useEffect(()=> {
-    console.log(pathname);
     const r = buildBreadcrumbs(pathname);
     console.log(r)
+    if(r && Array.isArray(r)) {
+      setBreadCrumb(r);
+    }
   },[]);
-
 
   const handleAddTest = () => {
     const newTest: TestItem = {
@@ -177,12 +154,11 @@ export default function TestListClient({ id }: { id: string }) {
     <Stack spacing={4}>
       {tests.length > 0 ? (
         tests.map(test => (
-          <TestCard key={test.id} test={test} onEditClick={handleEditClick} onDeleteClick={handleDeleteClick} />
+          <TestCard key={test.id} subjectId={id} test={test} onEditClick={handleEditClick} onDeleteClick={handleDeleteClick} />
         ))
       ) : (
         <InfoBlock>
             <>
-
               <Box
                 sx={{
                   backgroundColor: 'primary.lighter',
@@ -272,6 +248,8 @@ export default function TestListClient({ id }: { id: string }) {
 
   return (
     <Box className='p-2 md:p-4 w-full max-w-screen-xl mx-auto'>
+      {breadCrumb ? <BreadCrumb breadCrumbList={breadCrumb} /> : ''}
+
       <Stack direction='row' justifyContent='space-between' alignItems='center' className='mb-6 flex-wrap gap-3'>
         <span className={'text-xl sm:text-2xl font-bold sm:max-w-3xl sm:text-nowrap sm:overflow-hidden sm:text-ellipsis block'}>{data?.name}</span>
         <Button

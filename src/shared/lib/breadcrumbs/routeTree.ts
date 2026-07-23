@@ -9,13 +9,13 @@ export interface RouteNode {
 export const routeTree: RouteNode = {
   children: {
     teacher: {
-      label: 'Home',
+      label: 'Все предметы',
       param: {
-        label: 'Subject',
+        label: 'Предмет',
         children: {
           createTest: {
             // label: 'Create',
-            param: { label: 'Test' },
+            param: { label: 'Создать' },
           },
         },
       },

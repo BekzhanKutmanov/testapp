@@ -9,7 +9,10 @@ type StyledMainProps = {
 }
 
 const StyledMain = styled.main<StyledMainProps>(({ isContentCompact }) => ({
-  padding: themeConfig.layoutPadding,
+  // padding: themeConfig.layoutPadding,
+  paddingBottom: themeConfig.layoutPadding,
+  paddingRight: themeConfig.layoutPadding,
+  paddingLeft: themeConfig.layoutPadding,
 
   ...(isContentCompact && {
     marginInline: 'auto',
@@ -17,11 +20,17 @@ const StyledMain = styled.main<StyledMainProps>(({ isContentCompact }) => ({
   }),
 
   '@media (max-width: 768px)': {
-    padding: 14
+    // padding: 14
+    paddingBottom: 14,
+    paddingRight: 14,
+    paddingLeft: 14,
   },
 
   '@media (max-width: 480px)': {
-    padding: 10
+    // padding: 10
+    paddingBottom: 10,
+    paddingRight: 10,
+    paddingLeft: 10,
   }
 }))
 

@@ -8,13 +8,9 @@ export const metadata = {
   title: 'Создание нового теста'
 }
 
-export default function CreateTestPage() {
+export default function CreateTest() {
   return (
     <Box>
-      <div className={'sm:px-[1rem]'}>
-        <MainTitle title={'Создание нового теста'} />
-      </div>
-
       <CreateTestClient />
     </Box>
   )

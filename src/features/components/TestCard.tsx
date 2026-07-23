@@ -20,12 +20,13 @@ interface TestItem {
 }
 
 interface TestCardProps {
+  subjectId: string,
   test: TestItem;
   onEditClick: (test: TestItem) => void;
   onDeleteClick: (id: string) => void;
 }
 
-export default function TestCard({ test, onEditClick, onDeleteClick }: TestCardProps) {
+export default function TestCard({ subjectId, test, onEditClick, onDeleteClick }: TestCardProps) {
   return (
     <Card
       variant="outlined"
@@ -41,7 +42,7 @@ export default function TestCard({ test, onEditClick, onDeleteClick }: TestCardP
     >
       <CardContent className='flex justify-between sm:items-center flex-col sm:flex-row p-3 sm:p-4 md:p-5 gap-2'>
         <Box className={'flex-1 min-w-0'}>
-          <Link href={'/'} className={'text-[var(--custom-component-color)] text-lg break-words hover:underline font-medium'}>
+          <Link href={`/teacher/${subjectId}/createTest/${test?.id}`} className={'text-[var(--custom-component-color)] text-lg break-words hover:underline font-medium'}>
             {test.name}
           </Link>
           <Typography variant='body2' color='textSecondary' style={{fontSize: '12px'}}>

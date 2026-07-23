@@ -35,7 +35,11 @@ import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked'
 import { usePathname } from 'next/navigation'
 import { buildBreadcrumbs } from '@/shared/lib/breadcrumbs/buildBreadcrumbs'
 import Link from 'next/link'
-import { BreadCrumbType } from '@/shared/model/types/BreadCrumbType'
+
+import { type BreadCrumbType } from '@/shared/model/types/BreadCrumbType'
+
+import BreadCrumb from '@/shared/ui/BreadCrumb'
+import MainTitle from '@/shared/ui/components/MainTitle'
 
 type QuestionType = 'RADIO' | 'CHECKBOX' | 'TEXT';
 
@@ -77,7 +81,7 @@ const CreateTestClient = () => {
   useEffect(()=> {
     const r = buildBreadcrumbs(pathname);
     console.log(r)
-    if(r) {
+    if(r && Array.isArray(r)) {
       setBreadCrumb(r);
     }
   },[]);
@@ -251,11 +255,10 @@ const CreateTestClient = () => {
 
   return (
     <Container maxWidth={false} sx={{ py: 4, maxWidth: '1800px', px: { xs: 0, sm: 2, md: 4 } }}>
-      {breadCrumb?.map((item)=> {
-        return <div key={item?.label}>
-          <Link href={item?.href}>{item?.label}</Link>
-        </div>
-      })}
+      {breadCrumb ? <BreadCrumb breadCrumbList={breadCrumb} /> : ''}
+
+      <MainTitle title={'Создание нового теста'} />
+
       <Stack spacing={3}>
         <Paper
           elevation={0}
