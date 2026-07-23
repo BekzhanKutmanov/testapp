@@ -4,9 +4,13 @@ import { type BreadCrumbType } from '@/shared/model/types/BreadCrumbType'
 import Link from 'next/link'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { buildBreadcrumbs } from '@/shared/lib/breadcrumbs/buildBreadcrumbs'
 
-export default function BreadCrumb({breadCrumbList}: {breadCrumbList: BreadCrumbType[]}) {
+export default function BreadCrumb() {
   const pathname = usePathname();
+
+  const [breadCrumb, setBreadCrumb] = useState<BreadCrumbType[] | null>(null);
 
   const textContent = (item: BreadCrumbType)=> {
     if(item?.href === pathname){
@@ -16,10 +20,18 @@ export default function BreadCrumb({breadCrumbList}: {breadCrumbList: BreadCrumb
     }
   }
 
+  useEffect(()=> {
+    const processingBreadCrumb = buildBreadcrumbs(pathname);
+    console.log( processingBreadCrumb)
+    if( processingBreadCrumb && Array.isArray( processingBreadCrumb)) {
+      setBreadCrumb( processingBreadCrumb);
+    }
+  },[]);
+
   return (
-    <div className={'flex pb-3'}>
+    <div className={'flex pb-3 flex-wrap'}>
       {
-        breadCrumbList?.map((item, idx: number)=> {
+        breadCrumb?.map((item, idx: number)=> {
           return (
             <div key={item?.label + idx} className={'flex items-center'}>
               {idx !== 0 && (

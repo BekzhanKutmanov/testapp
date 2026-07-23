@@ -1,9 +1,12 @@
 import { Box, Typography, Paper } from '@mui/material';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-import Image from 'next/image'
 import InfoBlock from '@/shared/ui/components/InfoBlock'
 
-export default function DefaultSubject() {
+export default async function DefaultSubject({searchParams }: { searchParams: Record<string, string | string[]> }) {
+  const page = searchParams.page;
+  const sort = searchParams.sort;
+  console.log(page, sort)
+
   return (
     <Box
       className='flex items-center justify-center'
