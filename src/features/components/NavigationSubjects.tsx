@@ -8,7 +8,7 @@ import { MenuItem } from '@menu/vertical-menu'
 import ActionsMenu from '@/shared/ui/components/ActionsMenu'
 
 interface MenuItemType {
-  data: {id: number, name: string}[],
+  data: SubjectType[],
   onUpdate: (id: number)=> void,
   onDelete: (id: number)=> void,
 }
