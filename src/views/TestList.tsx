@@ -181,41 +181,45 @@ export default function TestListClient({ id }: { id: string }) {
 
   // Рендер блока списка тестов
   const renderTestList = () => (
-    <Stack spacing={4}>
-      {tests.length > 0 ? (
-        tests.map(test => (
-          <TestCard
-            key={test.id}
-            subjectId={id}
-            test={test}
-            onEditClick={handleEditClick}
-            onDeleteClick={handleDeleteClick}
-          />
-        ))
-      ) : (
-        <InfoBlock>
-          <>
-            <Box
-              sx={{
-                backgroundColor: 'primary.lighter',
-                color: 'primary.main',
-                borderRadius: '50%',
-                p: 2,
-                mb: 3,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <Image alt={'Нет данных'} src={'/images/empty-box.png'} width={140} height={140} />
-            </Box>
-            <Typography variant='body1' color='' sx={{ mb: 4, maxWidth: 300 }}>
-              Тестов пока нет. Нажмите кнопку выше, чтобы создать первый тест.
-            </Typography>
-          </>
-        </InfoBlock>
-      )}
-    </Stack>
+    <div>
+      <Stack spacing={4}>
+        {tests.length > 0 ? (
+          tests.map(test => (
+            <TestCard
+              key={test.id}
+              draggableProp={true}
+              onDragStartProp={(i)=> console.log(i)}
+              subjectId={id}
+              test={test}
+              onEditClick={handleEditClick}
+              onDeleteClick={handleDeleteClick}
+            />
+          ))
+        ) : (
+          <InfoBlock>
+            <>
+              <Box
+                sx={{
+                  backgroundColor: 'primary.lighter',
+                  color: 'primary.main',
+                  borderRadius: '50%',
+                  p: 2,
+                  mb: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Image alt={'Нет данных'} src={'/images/empty-box.png'} width={140} height={140} />
+              </Box>
+              <Typography variant='body1' color='' sx={{ mb: 4, maxWidth: 300 }}>
+                Тестов пока нет. Нажмите кнопку выше, чтобы создать первый тест.
+              </Typography>
+            </>
+          </InfoBlock>
+        )}
+      </Stack>
+    </div>
   )
 
   // Рендер модального окна редактирования
@@ -249,14 +253,22 @@ export default function TestListClient({ id }: { id: string }) {
 
           <div className={'bottom-shadow'}></div>
 
-          {exportTestFn && <ExportCurrentTest currentSubjectName={data?.name} selectedSubject={(id: number | null) => console.log('test list ', id)} />}
+          {exportTestFn && (
+            <ExportCurrentTest
+              currentSubjectName={data?.name}
+              selectedSubject={(id: number | null) => console.log('test list ', id)}
+            />
+          )}
         </Box>
       </DialogContent>
       <DialogActions className='pb-4 px-6'>
-        <Button onClick={() => {
-          setIsEditModalOpen(false);
-          setExportTestFn(false);
-        }} color='inherit'>
+        <Button
+          onClick={() => {
+            setIsEditModalOpen(false)
+            setExportTestFn(false)
+          }}
+          color='inherit'
+        >
           Отмена
         </Button>
         <Button onClick={handleSaveEdit} variant='contained' color='primary'>
@@ -326,7 +338,7 @@ export default function TestListClient({ id }: { id: string }) {
       </Stack>
 
       {renderCreateTestModal()}
-      <Box className={'max-w-5xl m-auto'}>{renderTestList()}</Box>
+      <div className={'max-w-5xl m-auto'}>{renderTestList()}</div>
       {renderEditModal()}
       {renderDeleteConfirmModal()}
 
