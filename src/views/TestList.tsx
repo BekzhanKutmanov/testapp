@@ -16,7 +16,8 @@ import {
   DialogActions,
   Box,
   Stack,
-  DialogContentText
+  DialogContentText,
+  Alert
 } from '@mui/material'
 
 import { useSelector } from 'react-redux'
@@ -34,16 +35,31 @@ import useMediaQuery from '@menu/hooks/useMediaQuery'
 import Image from 'next/image'
 import InfoBlock from '@/shared/ui/components/InfoBlock'
 import BreadCrumb from '@/shared/ui/BreadCrumb'
+import CustomSelect from '@/shared/ui/components/CustomSelect'
+import MenuItem from '@mui/material/MenuItem'
+import CopyExternalTest from '@/shared/ui/CopyExternalTest'
+
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
+import ArrowRightAltOutlinedIcon from '@mui/icons-material/ArrowRightAltOutlined'
+import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined'
+import SubjectSelect from '@/shared/ui/SubjectSelect'
+import ExportCurrentTest from '@/shared/ui/ExportCurrentTest'
 
 export default function TestListClient({ id }: { id: string }) {
   const [tests, setTests] = useState<TestItem[]>([])
+  const [nameTest, setNameTest] = useState('')
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingTest, setEditingTest] = useState<TestItem | null>(null)
   const [editName, setEditName] = useState('')
 
+  const [isCreateTestModalOpen, setIsCreateTestModalOpen] = useState(false)
+
   // Состояние для подтверждения удаления
   const [isDeleteConfirmOpen, setIsDeleteConfirm] = useState(false)
   const [testToDeleteId, setTestToDeleteId] = useState<string | null>(null)
+
+  const [testImportFn, setTestImportFn] = useState(false)
+  const [exportTestFn, setExportTestFn] = useState(false)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['subject', id],
@@ -52,22 +68,22 @@ export default function TestListClient({ id }: { id: string }) {
 
   const isMedia = useMediaQuery('640px')
 
-  const subjects = useSelector(state => state.subjects.value);
+  const subjects = useSelector(state => state.subjects.value)
 
   useEffect(() => {
     if (isError) {
-      enqueueSnackbar('Ошибка при получении предметов', { variant: 'error' });
+      enqueueSnackbar('Ошибка при получении предметов', { variant: 'error' })
     }
-  }, [isError]);
+  }, [isError])
 
   useEffect(() => {
-    console.log(subjects)
-  }, [subjects])
+    console.log(data)
+  }, [data])
 
   const handleAddTest = () => {
     const newTest: TestItem = {
       id: Math.random().toString(36).substr(2, 9),
-      name: `тест ${tests.length}`,
+      name: nameTest,
       createdAt: new Date().toLocaleDateString('ru-RU', {
         day: '2-digit',
         month: '2-digit',
@@ -78,6 +94,8 @@ export default function TestListClient({ id }: { id: string }) {
     }
 
     setTests([...tests, newTest])
+    setIsCreateTestModalOpen(false)
+    setNameTest('')
     enqueueSnackbar('Тест успешно создан', { variant: 'success' })
   }
 
@@ -110,15 +128,75 @@ export default function TestListClient({ id }: { id: string }) {
     }
   }
 
+  // рендер модального окна создания тестов
+  const renderCreateTestModal = () => (
+    <Dialog open={isCreateTestModalOpen} onClose={() => setIsCreateTestModalOpen(false)} fullWidth maxWidth='xs'>
+      <DialogTitle>Создание теста</DialogTitle>
+      <DialogContent>
+        <Box>
+          <TextField
+            autoFocus
+            margin='dense'
+            label='Название теста'
+            type='text'
+            fullWidth
+            variant='outlined'
+            value={nameTest}
+            onChange={e => setNameTest(e.target.value)}
+            sx={{ mt: 2 }}
+            size={'small'}
+          />
+          <div className={`text-end text-[12px] mr-1 ${nameTest?.length > 100 ? 'text-red-500 font-bold' : ''}`}>
+            {nameTest?.length}/100
+          </div>
+        </Box>
+
+        <div className={'flex items-center gap-1 pl-2'}>
+          <span
+            onClick={() => setTestImportFn(!testImportFn)}
+            className={'cursor-pointer text-[13px] text-blue-500 hover:text-blue-600'}
+          >
+            [{testImportFn ? '-' : '+'}] Импортировать готовый тест
+          </span>
+        </div>
+
+        {testImportFn && (
+          <CopyExternalTest
+            subjectId={1}
+            externalTestId={paramId => console.log(paramId)}
+            externalSubjectId={paramId => console.log(paramId)}
+          />
+        )}
+      </DialogContent>
+      <DialogActions className='pb-4 px-6'>
+        <Button size={'small'} onClick={() => setIsCreateTestModalOpen(false)} color='inherit'>
+          Отмена
+        </Button>
+        <Button size={'small'} onClick={handleAddTest} variant='contained' color='primary'>
+          Сохранить
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+
   // Рендер блока списка тестов
   const renderTestList = () => (
-    <Stack spacing={4}>
-      {tests.length > 0 ? (
-        tests.map(test => (
-          <TestCard key={test.id} subjectId={id} test={test} onEditClick={handleEditClick} onDeleteClick={handleDeleteClick} />
-        ))
-      ) : (
-        <InfoBlock>
+    <div>
+      <Stack spacing={4}>
+        {tests.length > 0 ? (
+          tests.map(test => (
+            <TestCard
+              key={test.id}
+              draggableProp={true}
+              onDragStartProp={(i)=> console.log(i)}
+              subjectId={id}
+              test={test}
+              onEditClick={handleEditClick}
+              onDeleteClick={handleDeleteClick}
+            />
+          ))
+        ) : (
+          <InfoBlock>
             <>
               <Box
                 sx={{
@@ -138,15 +216,16 @@ export default function TestListClient({ id }: { id: string }) {
                 Тестов пока нет. Нажмите кнопку выше, чтобы создать первый тест.
               </Typography>
             </>
-        </InfoBlock>
-      )}
-    </Stack>
+          </InfoBlock>
+        )}
+      </Stack>
+    </div>
   )
 
   // Рендер модального окна редактирования
   const renderEditModal = () => (
     <Dialog open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} fullWidth maxWidth='xs'>
-      <DialogTitle>Редактировать название теста</DialogTitle>
+      <DialogTitle>Редактирование теста</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
@@ -159,9 +238,37 @@ export default function TestListClient({ id }: { id: string }) {
           onChange={e => setEditName(e.target.value)}
           sx={{ mt: 2 }}
         />
+        <div className={`text-end text-[12px] mr-1 ${editName?.length > 100 ? 'text-red-500 font-bold' : ''}`}>
+          {editName?.length}/100
+        </div>
+        <Box>
+          <div className={'flex items-center gap-1 pl-2'}>
+            <span
+              onClick={() => setExportTestFn(!exportTestFn)}
+              className={'cursor-pointer text-[13px] text-blue-500 hover:text-blue-600'}
+            >
+              [{exportTestFn ? '-' : '+'}] Переместить или копировать в другой предмет
+            </span>
+          </div>
+
+          <div className={'bottom-shadow'}></div>
+
+          {exportTestFn && (
+            <ExportCurrentTest
+              currentSubjectName={data?.name}
+              selectedSubject={(id: number | null) => console.log('test list ', id)}
+            />
+          )}
+        </Box>
       </DialogContent>
       <DialogActions className='pb-4 px-6'>
-        <Button onClick={() => setIsEditModalOpen(false)} color='inherit'>
+        <Button
+          onClick={() => {
+            setIsEditModalOpen(false)
+            setExportTestFn(false)
+          }}
+          color='inherit'
+        >
           Отмена
         </Button>
         <Button onClick={handleSaveEdit} variant='contained' color='primary'>
@@ -212,18 +319,26 @@ export default function TestListClient({ id }: { id: string }) {
       <BreadCrumb />
 
       <Stack direction='row' justifyContent='space-between' alignItems='center' className='mb-6 flex-wrap gap-3'>
-        <span className={'text-xl sm:text-2xl font-bold sm:max-w-3xl sm:text-nowrap sm:overflow-hidden sm:text-ellipsis block'}>{data?.name}</span>
+        <span
+          className={
+            'text-xl sm:text-2xl font-bold sm:max-w-3xl sm:text-nowrap sm:overflow-hidden sm:text-ellipsis block'
+          }
+        >
+          {data?.name}
+        </span>
         <Button
           variant='contained'
           color='primary'
-          onClick={handleAddTest}
+          // onClick={handleAddTest}
+          onClick={() => setIsCreateTestModalOpen(true)}
           className='whitespace-nowrap w-full sm:w-auto'
         >
-          Создать новый тест
+          Создать тест
         </Button>
       </Stack>
 
-      <Box className={'max-w-5xl m-auto'}>{renderTestList()}</Box>
+      {renderCreateTestModal()}
+      <div className={'max-w-5xl m-auto'}>{renderTestList()}</div>
       {renderEditModal()}
       {renderDeleteConfirmModal()}
 

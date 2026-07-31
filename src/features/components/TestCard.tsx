@@ -21,14 +21,18 @@ interface TestItem {
 
 interface TestCardProps {
   subjectId: string,
+  draggableProp: boolean,
+  onDragStartProp: ()=> void,
   test: TestItem;
   onEditClick: (test: TestItem) => void;
   onDeleteClick: (id: string) => void;
 }
 
-export default function TestCard({ subjectId, test, onEditClick, onDeleteClick }: TestCardProps) {
+export default function TestCard({ subjectId, draggableProp, onDragStartProp, test, onEditClick, onDeleteClick }: TestCardProps) {
   return (
     <Card
+      draggable={draggableProp}
+      onDragStart={()=> onDragStartProp(test)}
       variant="outlined"
       sx={{
         width: '100%',
