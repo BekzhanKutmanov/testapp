@@ -10,6 +10,7 @@ import ThemeProvider from '@components/theme'
 import { getMode, getSettingsFromCookie } from '@core/utils/serverHelpers'
 import QueryProvider from '@/shared/api/QueryClientProvider'
 import StoreProvider from '@/features/StoreProvider'
+import { ContextProvider } from '@/features/ThemeContext'
 
 type Props = ChildrenType & {
   direction: Direction
@@ -28,7 +29,9 @@ const Providers = (props: Props) => {
       <VerticalNavProvider>
         <SettingsProvider settingsCookie={settingsCookie} mode={mode}>
           <StoreProvider>
-            <ThemeProvider direction={direction}>{children}</ThemeProvider>
+            <ContextProvider>
+              <ThemeProvider direction={direction}>{children}</ThemeProvider>
+            </ContextProvider>
           </StoreProvider>
         </SettingsProvider>
       </VerticalNavProvider>

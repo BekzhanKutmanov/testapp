@@ -17,7 +17,6 @@ import {
   Box,
   Stack,
   DialogContentText,
-  Alert
 } from '@mui/material'
 
 import { useSelector } from 'react-redux'
@@ -35,17 +34,15 @@ import useMediaQuery from '@menu/hooks/useMediaQuery'
 import Image from 'next/image'
 import InfoBlock from '@/shared/ui/components/InfoBlock'
 import BreadCrumb from '@/shared/ui/BreadCrumb'
-import CustomSelect from '@/shared/ui/components/CustomSelect'
-import MenuItem from '@mui/material/MenuItem'
 import CopyExternalTest from '@/shared/ui/CopyExternalTest'
-
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
+import ExportCurrentTest from '@/shared/ui/ExportCurrentTest'
 import ArrowRightAltOutlinedIcon from '@mui/icons-material/ArrowRightAltOutlined'
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined'
-import SubjectSelect from '@/shared/ui/SubjectSelect'
-import ExportCurrentTest from '@/shared/ui/ExportCurrentTest'
+import { useThemeContext } from '@/features/ThemeContext'
 
 export default function TestListClient({ id }: { id: string }) {
+  const { ctxDndFn, setCtxDndFn } = useThemeContext();
+
   const [tests, setTests] = useState<TestItem[]>([])
   const [nameTest, setNameTest] = useState('')
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -187,8 +184,6 @@ export default function TestListClient({ id }: { id: string }) {
           tests.map(test => (
             <TestCard
               key={test.id}
-              draggableProp={true}
-              onDragStartProp={(i)=> console.log(i)}
               subjectId={id}
               test={test}
               onEditClick={handleEditClick}
@@ -257,6 +252,7 @@ export default function TestListClient({ id }: { id: string }) {
             <ExportCurrentTest
               currentSubjectName={data?.name}
               selectedSubject={(id: number | null) => console.log('test list ', id)}
+              addressedSubjectId={null}
             />
           )}
         </Box>
@@ -297,6 +293,64 @@ export default function TestListClient({ id }: { id: string }) {
       </DialogActions>
     </Dialog>
   )
+
+  // мод окно для днд подтверждения | копирование или перемещение
+  const renderDndModal = () => (
+    <Dialog open={ctxDndFn?.state} onClose={() => setCtxDndFn({state: false, subjectId: null})} fullWidth maxWidth='xs'>
+      <DialogTitle>Действие</DialogTitle>
+      {/*<p className={'px-4'}>Переместить тест в: <b>{currentSubjectFind()}</b> </p>*/}
+      {/*<Box className={'flex items-center p-4'}>*/}
+      {/*  <Button*/}
+      {/*    variant='contained'*/}
+      {/*    size={'small'}*/}
+      {/*    className={'w-full'}*/}
+      {/*    sx={{*/}
+      {/*      borderTopRightRadius: 0,*/}
+      {/*      borderBottomRightRadius: 0*/}
+      {/*    }}*/}
+      {/*    startIcon={<ArrowRightAltOutlinedIcon fontSize={'small'} />}*/}
+      {/*  >*/}
+      {/*    {' '}*/}
+      {/*    Переместить*/}
+      {/*  </Button>*/}
+      {/*  <Button*/}
+      {/*    variant='outlined'*/}
+      {/*    size={'small'}*/}
+      {/*    className={'w-full'}*/}
+      {/*    sx={{*/}
+      {/*      borderTopLeftRadius: 0,*/}
+      {/*      borderBottomLeftRadius: 0*/}
+      {/*    }}*/}
+      {/*    startIcon={<ContentCopyOutlinedIcon fontSize={'small'} />}*/}
+      {/*  >*/}
+      {/*    {' '}*/}
+      {/*    Копировать*/}
+      {/*  </Button>*/}
+      {/*</Box>*/}
+      <div className={'px-4'}>
+        <ExportCurrentTest
+          currentSubjectName={data?.name}
+          selectedSubject={(id: number | null) => console.log('test list ', id)}
+          addressedSubjectId={ctxDndFn?.subjectId}
+        />
+      </div>
+      <DialogActions className='pb-4 px-6'>
+        <Button
+          size={'small'}
+          onClick={() => {
+            setCtxDndFn({state: false, subjectId: null})
+          }}
+          color='inherit'
+        >
+          Отмена
+        </Button>
+        <Button onClick={()=> console.log('yahaaa blyat!')} variant='contained' size={'small'} color='primary'>
+          Сохранить
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+
 
   if (isLoading) {
     return (
@@ -341,6 +395,8 @@ export default function TestListClient({ id }: { id: string }) {
       <div className={'max-w-5xl m-auto'}>{renderTestList()}</div>
       {renderEditModal()}
       {renderDeleteConfirmModal()}
+      {renderDndModal()}
+
 
       {isMedia && subjects && subjects.length > 0 && <MobileNavigationSubjects data={subjects} onClose={() => {}} />}
     </Box>

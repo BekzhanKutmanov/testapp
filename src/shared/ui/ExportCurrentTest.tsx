@@ -11,10 +11,11 @@ import { getSubjects } from '@/features/api/api'
 import { Alert } from '@mui/material'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 
-export default function ExportCurrentTest({ currentSubjectName, selectedSubject }: { currentSubjectName: string, selectedSubject: (id: number | null) => void }) {
+export default function ExportCurrentTest({ currentSubjectName, selectedSubject, addressedSubjectId }: { currentSubjectName: string, selectedSubject: (id: number | null) => void, addressedSubjectId: number | null}) {
   // selectedSubjectId, setSelectedSubjectId, subjects - получаю от родителя и просто передаю в SubjectSelect получая от него конкретный предмет и отправлю в родитель выбранный предмет
   const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null)
   const [subjectName, setSubjectName] = useState('');
+  const [addressed, setAddressed] = useState('');
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['subjectKey'],
@@ -37,6 +38,12 @@ export default function ExportCurrentTest({ currentSubjectName, selectedSubject 
   useEffect(()=> {
     if(Array.isArray(data)) {
       setSelectedSubjectId(data[0]?.id);
+
+      const test = data.find((item)=> {
+        return item.id == addressedSubjectId
+      })
+      console.log('test ', test);
+      if(test) setAddressed(test?.name);
     }
   },[data]);
 
@@ -44,9 +51,9 @@ export default function ExportCurrentTest({ currentSubjectName, selectedSubject 
     <Box>
       {subjectName ? (
         <p className={'flex items-center gap-1 mb-3 text-sm mt-3'}>
-          Текущий предмет:{' '}
-          <span className={'flex items-center gap-1 text-gray-400'}>
-            <InfoOutlinedIcon fontSize={'small'} /> {subjectName}
+          Текущий предмет:
+          <span className={' flex items-center gap-1 text-gray-400'}>
+            <InfoOutlinedIcon fontSize={'small'} /> <span className={'max-w-[170px] overflow-hidden text-nowrap text-ellipsis block'}>{subjectName}</span>
           </span>
         </p>
       ) : (
@@ -85,12 +92,16 @@ export default function ExportCurrentTest({ currentSubjectName, selectedSubject 
           </Box>
         </Box>
         <div className={'w-full sm:w-[80%]'}>
-          <label className={'text-[var(--myDarkColor)]'}>Предмет:</label>
-          <SubjectSelect
-            selectedSubjectId={selectedSubjectId}
-            setSelectedSubjectId={setSelectedSubjectId}
-            subjects={data}
-          />
+          <label className={'text-[var(--myDarkColor)]'}>Предмет: </label>
+          {addressedSubjectId ? (
+            <div className={'text-gray-400 max-w-[170px] overflow-hidden text-nowrap text-ellipsis'}>{addressed}</div>
+          ) : (
+            <SubjectSelect
+              selectedSubjectId={selectedSubjectId}
+              setSelectedSubjectId={setSelectedSubjectId}
+              subjects={data}
+            />
+          )}
         </div>
       </Box>
       <Alert severity='info' className={'text-[13px] p-2'}>
