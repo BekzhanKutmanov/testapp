@@ -3,11 +3,17 @@
 import Link from 'next/link'
 
 import { Card, CardContent, Typography, IconButton, Box, Stack } from '@mui/material'
-import EditIcon from '@mui/icons-material/Edit'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
-import { CSS } from '@dnd-kit/utilities'
+
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import { useDraggable } from '@dnd-kit/core'
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { useState } from 'react';
+
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 interface TestItem {
   id: string
@@ -27,6 +33,38 @@ export default function TestCard({ subjectId, test, onEditClick, onDeleteClick }
     id: test.id,
     data: test // важно: чтобы DragOverlay знал что рисовать
   })
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleClick = (event: MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const menuItems = [
+    {
+      id: 'edit',
+      icon: <EditIcon color="primary" />,
+      text: 'Редактировать',
+      onClick: () => onEditClick(test),
+    },
+    {
+      id: 'copy',
+      icon: <ContentCopyIcon fontSize="small" />,
+      text: 'Копировать',
+      onClick: () => console.log(test),
+    },
+    {
+      id: 'delete',
+      icon: <DeleteOutlineIcon fontSize="small" color="error" />,
+      text: 'Удалить',
+      onClick: () => onDeleteClick(test.id),
+    },
+  ];
 
   return (
     <Card
@@ -69,24 +107,53 @@ export default function TestCard({ subjectId, test, onEditClick, onDeleteClick }
           </Typography>
         </Box>
         <Stack direction='row' spacing={1} className={'flex justify-end'}>
-          <IconButton
-            color='primary'
-            onClick={() => onEditClick(test)}
-            size='medium'
-            sx={{ backgroundColor: 'action.hover' }}
-            title='Редактировать'
-          >
-            <EditIcon fontSize='small' />
-          </IconButton>
-          <IconButton
-            color='error'
-            onClick={() => onDeleteClick(test.id)}
-            size='medium'
-            sx={{ backgroundColor: 'error.lighter', '&:hover': { backgroundColor: 'error.light' } }}
-            title='Удалить'
-          >
-            <DeleteOutlineIcon fontSize='small' />
-          </IconButton>
+          <div>
+            <IconButton
+              aria-label="more"
+              id="long-button"
+              aria-controls={open ? 'long-menu' : undefined}
+              aria-expanded={open ? 'true' : undefined}
+              aria-haspopup="true"
+              onClick={handleClick}
+            >
+              <MoreVertIcon />
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+            >
+              {menuItems.map((option) => (
+                <MenuItem key={option?.id} onClick={()=> {
+                  handleClose();
+                  option.onClick();
+                }}>
+                  {option.icon}
+                  {/*<Typography sx={{ ml: 1 }}>*/}
+                  {/*  {option.text}*/}
+                  {/*</Typography>*/}
+                </MenuItem>
+              ))}
+            </Menu>
+          </div>
+          {/*<IconButton*/}
+          {/*  color='primary'*/}
+          {/*  onClick={() => onEditClick(test)}*/}
+          {/*  size='medium'*/}
+          {/*  sx={{ backgroundColor: 'action.hover' }}*/}
+          {/*  title='Редактировать'*/}
+          {/*>*/}
+          {/*  <EditIcon fontSize='small' />*/}
+          {/*</IconButton>*/}
+          {/*<IconButton*/}
+          {/*  color='error'*/}
+          {/*  onClick={() => onDeleteClick(test.id)}*/}
+          {/*  size='medium'*/}
+          {/*  sx={{ backgroundColor: 'error.lighter', '&:hover': { backgroundColor: 'error.light' } }}*/}
+          {/*  title='Удалить'*/}
+          {/*>*/}
+          {/*  <DeleteOutlineIcon fontSize='small' />*/}
+          {/*</IconButton>*/}
         </Stack>
       </CardContent>
     </Card>
