@@ -36,11 +36,9 @@ export default function TestCard({ subjectId, test, onEditClick, onDeleteClick }
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-
   const handleClick = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
-
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -48,13 +46,13 @@ export default function TestCard({ subjectId, test, onEditClick, onDeleteClick }
   const menuItems = [
     {
       id: 'edit',
-      icon: <EditIcon color="primary" />,
+      icon: <EditIcon fontSize="small" color="primary" />,
       text: 'Редактировать',
       onClick: () => onEditClick(test),
     },
     {
       id: 'copy',
-      icon: <ContentCopyIcon fontSize="small" />,
+      icon: <ContentCopyIcon fontSize="small" color={'action'} />,
       text: 'Копировать',
       onClick: () => console.log(test),
     },
