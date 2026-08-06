@@ -23,17 +23,9 @@ const menuItemStyles = (theme: Theme): MenuItemStyles => {
         }
       },
       [`&:not(.${menuClasses.subMenuRoot}) > .${menuClasses.button}.${menuClasses.active}`]: {
-        color: 'var(--mui-palette-primary-contrastText)',
-        background:
-          theme.direction === 'ltr'
-            ? `linear-gradient(270deg, var(--mui-palette-primary-main), ${lighten(
-                theme.palette.primary.main,
-                0.5
-              )} 100%)`
-            : `linear-gradient(270deg, ${lighten(
-                theme.palette.primary.main,
-                0.5
-              )}, var(--mui-palette-primary-main) 100%)`,
+        color: 'var(--mui-palette-primary-main)',
+        backgroundColor: 'var(--mui-palette-primary-lightOpacity)', // мягкий полупрозрачный фон
+        borderRadius: 8, // если хотите закругление со всех сторон, а не только справа
         [`& .${menuClasses.icon}`]: {
           color: 'inherit'
         }

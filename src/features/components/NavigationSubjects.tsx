@@ -52,7 +52,7 @@ function SubjectDroppable({
         </div>
       </ActionsMenu>
     </div>
-  )
+  );
 }
 
 export default function NavigationSubjects({ data, onUpdate, onDelete }: MenuItemType) {
