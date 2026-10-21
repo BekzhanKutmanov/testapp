@@ -19,6 +19,7 @@ export default async function DefaultSubject({searchParams }: { searchParams: Re
       <InfoBlock>
         <>
           <Box
+            className={'shadow'}
             sx={{
               backgroundColor: 'primary.lighter',
               color: 'primary.main',

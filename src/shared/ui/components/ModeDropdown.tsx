@@ -9,8 +9,11 @@ import IconButton from '@mui/material/IconButton'
 
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
+import { useThemeContext } from '@/features/ThemeContext'
 
 const ModeDropdown = () => {
+  const {ctxTheme, setCtxTheme} = useThemeContext();
+
   // States
   const [tooltipOpen, setTooltipOpen] = useState(false)
 

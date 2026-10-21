@@ -28,12 +28,15 @@ const LogoText = styled.span<LogoTextProps>`
 
 const Logo = ({ color }: { color?: CSSProperties['color'] }) => {
   return (
-    <div className='flex items-center min-bs-[24px]'>
+    <div className='flex items-center min-bs-[24px] gap-3'>
       {/*<MaterioLogo className='text-[22px] text-primary' />*/}
       <div className={'w-[45px] h-[45px] flex justify-center items-center'}>
         <img src={'/images/logo-remove.png'} className={'w-full object-fit'}/>
       </div>
-      <LogoText color={color}>TestApp</LogoText>
+      <div className={'flex flex-col '}>
+        <h2>ОшГУ</h2>
+        <small className={''}>Система тестирования</small>
+      </div>
     </div>
   )
 }

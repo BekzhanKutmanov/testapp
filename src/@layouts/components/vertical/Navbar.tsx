@@ -31,7 +31,7 @@ const Navbar = (props: Props) => {
         verticalLayoutClasses.headerDetached
       )}
     >
-      <div className={'flex bs-full w-full pt-3 px-[12px] sm:px-[24px]'}>{children}</div>
+      <div className={'flex bs-full w-full px-[12px] sm:px-[24px]'}>{children}</div>
     </StyledHeader>
   )
 }

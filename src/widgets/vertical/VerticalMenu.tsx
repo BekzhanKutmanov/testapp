@@ -197,9 +197,10 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
   return (
     <>
       <ScrollWrapper
+
         {...(isBreakpointReached
           ? {
-              className: 'bs-full overflow-y-auto overflow-x-hidden',
+              className: 'bs-full overflow-y-auto overflow-x-hidden ',
               onScroll: container => scrollMenu(container, false)
             }
           : {

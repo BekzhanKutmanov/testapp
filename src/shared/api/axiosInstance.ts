@@ -2,7 +2,7 @@
 import axios from "axios";
 
 export const axiosInstance = axios.create({
-  baseURL: "https://69ce1d6b33a09f831b7cec43.mockapi.io/subjects"
+  baseURL: "https://6acc4d20ef37b15040786ad8.mockapi.io/subject"
 });
 
 // request (токен)
@@ -16,7 +16,7 @@ axiosInstance.interceptors.request.use((config) => {
   //
   // if (token) {
   //   config.headers.Authorization = `Bearer ${token}`;
-  // }
+  // }    
 
   return config;
 });

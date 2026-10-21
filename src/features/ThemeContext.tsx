@@ -9,8 +9,10 @@ const ThemeContext = createContext();
 export function ContextProvider({ children }) {
   const [ctxDndFn, setCtxDndFn] = useState<{state: boolean, subjectId: number | null} | null>(null);
 
+  const [ctxTheme, setCtxTheme] = useState<boolean>(false);
+
   // Expose both the state value and the setter function
-  return <ThemeContext.Provider value={{ ctxDndFn, setCtxDndFn }}>{children}</ThemeContext.Provider>
+  return <ThemeContext.Provider value={{ ctxDndFn, setCtxDndFn, ctxTheme, setCtxTheme }}>{children}</ThemeContext.Provider>
 }
 
 // 3. Build a custom hook for effortless state consumption

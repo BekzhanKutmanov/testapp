@@ -4,11 +4,14 @@ import counterReducer from '@/features/counter/counterSlice';
 
 import subjectsSlice from '@/features/slices/subjectsSlice'
 
+import proctorResultSlice from '@/shared/slices/proctorResultSlice';
+
 export const makeStore = () => {
   return configureStore({
     reducer: {
       counter: counterReducer,
       subjects: subjectsSlice,
+      proctorResult: proctorResultSlice,
     },
   });
 };

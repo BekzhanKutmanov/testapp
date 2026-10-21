@@ -39,6 +39,7 @@ import ExportCurrentTest from '@/shared/ui/ExportCurrentTest'
 import ArrowRightAltOutlinedIcon from '@mui/icons-material/ArrowRightAltOutlined'
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined'
 import { useThemeContext } from '@/features/ThemeContext'
+import AddIcon from '@mui/icons-material/Add';
 
 export default function TestListClient({ id }: { id: string }) {
   const { ctxDndFn, setCtxDndFn } = useThemeContext();
@@ -180,7 +181,7 @@ export default function TestListClient({ id }: { id: string }) {
   const renderTestList = () => (
     <div>
       <Stack spacing={4}>
-        {tests.length > 0 ? (
+        {tests?.length > 0 ? (
           tests.map(test => (
             <TestCard
               key={test.id}
@@ -188,16 +189,14 @@ export default function TestListClient({ id }: { id: string }) {
               test={test}
               onEditClick={handleEditClick}
               onDeleteClick={handleDeleteClick}
+              testsLength={tests.length}
             />
           ))
         ) : (
-          <InfoBlock>
+          <InfoBlock border={false}>
             <>
               <Box
                 sx={{
-                  backgroundColor: 'primary.lighter',
-                  color: 'primary.main',
-                  borderRadius: '50%',
                   p: 2,
                   mb: 3,
                   display: 'flex',
@@ -369,13 +368,15 @@ export default function TestListClient({ id }: { id: string }) {
   }
 
   return (
-    <Box className='p-2 md:p-4 w-full max-w-screen-xl mx-auto'>
+    <Box className='min-h-[50vh] p-2 md:p-4 m-3
+      bg-backgroundPaper rounded
+    '>
       <BreadCrumb />
 
       <Stack direction='row' justifyContent='space-between' alignItems='center' className='mb-6 flex-wrap gap-3'>
         <span
           className={
-            'text-xl sm:text-2xl font-bold sm:max-w-3xl sm:text-nowrap sm:overflow-hidden sm:text-ellipsis block'
+            'text-xl font-bold sm:max-w-3xl sm:text-nowrap sm:overflow-hidden sm:text-ellipsis block'
           }
         >
           {data?.name}
@@ -383,7 +384,7 @@ export default function TestListClient({ id }: { id: string }) {
         <Button
           variant='contained'
           color='primary'
-          // onClick={handleAddTest}
+          startIcon={<AddIcon fontSize={'small'}/>}
           onClick={() => setIsCreateTestModalOpen(true)}
           className='whitespace-nowrap w-full sm:w-auto'
         >
@@ -392,13 +393,12 @@ export default function TestListClient({ id }: { id: string }) {
       </Stack>
 
       {renderCreateTestModal()}
-      <div className={'max-w-5xl m-auto'}>{renderTestList()}</div>
+      {renderTestList()}
       {renderEditModal()}
       {renderDeleteConfirmModal()}
       {renderDndModal()}
 
-
-      {isMedia && subjects && subjects.length > 0 && <MobileNavigationSubjects data={subjects} onClose={() => {}} />}
+      {/*{isMedia && subjects && subjects.length > 0 && <MobileNavigationSubjects data={subjects} onClose={() => {}} />}*/}
     </Box>
   )
 }

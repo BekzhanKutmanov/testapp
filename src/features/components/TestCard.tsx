@@ -8,8 +8,8 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import { useDraggable } from '@dnd-kit/core'
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { useState } from 'react';
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import { useEffect, useState } from 'react'
 
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
@@ -26,9 +26,10 @@ interface TestCardProps {
   test: TestItem
   onEditClick: (test: TestItem) => void
   onDeleteClick: (id: string) => void
+  testsLength: number
 }
 
-export default function TestCard({ subjectId, test, onEditClick, onDeleteClick }: TestCardProps) {
+export default function TestCard({ subjectId, test, onEditClick, onDeleteClick, testsLength }: TestCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: test.id,
     data: test // важно: чтобы DragOverlay знал что рисовать
@@ -64,45 +65,44 @@ export default function TestCard({ subjectId, test, onEditClick, onDeleteClick }
     },
   ];
 
-  return (
-    <Card
-      ref={setNodeRef}
-      variant='outlined'
-      sx={{
-        width: '100%',
-        transition: '0.3s',
-        borderRadius: 2,
-        opacity: isDragging ? 0.4 : 1,   // оригинал "гаснет", а не дёргается transform'ом
-        cursor: isDragging ? 'grabbing' : 'default',
-        '&:hover': {
-          boxShadow: theme => theme.shadows[4],
-          borderColor: 'primary.main'
-        }
-      }}
-    >
-      <CardContent className='flex justify-between sm:items-center flex-col sm:flex-row p-3 sm:p-4 md:p-5 gap-2'>
-        <Box
-          className={'hidden lg:block'}
-          // ref={setNodeRef}
-          {...listeners}
-          {...attributes}
-          sx={{
-            cursor: 'grab'
-          }}
-        >
-          <DragIndicatorIcon />
-        </Box>
+  useEffect(() => {
+    console.log(testsLength);
+  }, [testsLength]);
 
-        <Box className={'flex-1 min-w-0'}>
-          <Link
-            href={`/teacher/${subjectId}/createTest/${test?.id}`}
-            className={'text-[var(--custom-component-color)] text-lg break-words hover:underline font-medium'}
+  return (
+    <div
+      ref={setNodeRef}
+      className={`
+        w-full transition-[0.3s] m-0
+        ${testsLength === 1 ? 'border-y-[2px]' : 'border-t-[2px]'}
+        ${isDragging ? 'opacity-[0.4] cursor-grabbing inline-block' : 'opacity-1 cursor-default'}
+        hover:shadow-md hover:bg-gray-100
+      `}
+    >
+      <CardContent className='flex justify-between sm:items-center p-5 gap-2'>
+        <Box className={'flex items-center gap-2'}>
+          <Box
+            className={'hidden lg:block'}
+            {...listeners}
+            {...attributes}
+            sx={{
+              cursor: 'grab'
+            }}
           >
-            {test.name}
-          </Link>
-          <Typography variant='body2' color='textSecondary' style={{ fontSize: '12px' }}>
-            Дата создания: {test.createdAt}
-          </Typography>
+            <DragIndicatorIcon />
+          </Box>
+
+          <Box className={'flex-1 min-w-0'}>
+            <Link
+              href={`/teacher/${subjectId}/createTest/${test?.id}`}
+              className={'text-[var(--custom-component-color)] text-[1fr] break-words hover:underline font-bold'}
+            >
+              {test.name}
+            </Link>
+            <Typography variant='body2' color='textSecondary' style={{ fontSize: '12px', marginTop: '8px' }}>
+              Дата создания: {test.createdAt}
+            </Typography>
+          </Box>
         </Box>
         <Stack direction='row' spacing={1} className={'flex justify-end'}>
           <div>
@@ -127,33 +127,12 @@ export default function TestCard({ subjectId, test, onEditClick, onDeleteClick }
                   option.onClick();
                 }}>
                   {option.icon}
-                  {/*<Typography sx={{ ml: 1 }}>*/}
-                  {/*  {option.text}*/}
-                  {/*</Typography>*/}
                 </MenuItem>
               ))}
             </Menu>
           </div>
-          {/*<IconButton*/}
-          {/*  color='primary'*/}
-          {/*  onClick={() => onEditClick(test)}*/}
-          {/*  size='medium'*/}
-          {/*  sx={{ backgroundColor: 'action.hover' }}*/}
-          {/*  title='Редактировать'*/}
-          {/*>*/}
-          {/*  <EditIcon fontSize='small' />*/}
-          {/*</IconButton>*/}
-          {/*<IconButton*/}
-          {/*  color='error'*/}
-          {/*  onClick={() => onDeleteClick(test.id)}*/}
-          {/*  size='medium'*/}
-          {/*  sx={{ backgroundColor: 'error.lighter', '&:hover': { backgroundColor: 'error.light' } }}*/}
-          {/*  title='Удалить'*/}
-          {/*>*/}
-          {/*  <DeleteOutlineIcon fontSize='small' />*/}
-          {/*</IconButton>*/}
         </Stack>
       </CardContent>
-    </Card>
+    </div>
   )
 }
