@@ -23,7 +23,7 @@ export const menuClasses = {
 export const verticalNavClasses = {
   root: 'ts-vertical-nav-root',
   container: 'ts-vertical-nav-container',
-  bgColorContainer: 'ts-vertical-nav-bg-color-container',
+  bgColorContainer: "ts-vertical-nav-bg-color-container bg-backgroundPaper",
   header: 'ts-vertical-nav-header',
   backdrop: 'ts-vertical-nav-backdrop',
   toggled: 'ts-toggled',

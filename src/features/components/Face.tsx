@@ -1,11 +1,14 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, memo } from 'react'
 
 import * as faceapi from 'face-api.js'
 import { enqueueSnackbar } from 'notistack'
 
 import { startTabTracking } from '@/features/utils_/startTabTracking'
+import { ProctorType } from '@/types/proctor/proctorType'
+import { useDispatch } from 'react-redux'
+import { addProctorResult } from '@/shared/slices/proctorResultSlice'
 
 interface ProctorCameraProps {
   onFacesDetected: (count: number) => void
@@ -13,16 +16,18 @@ interface ProctorCameraProps {
   onLookingAway: (away: boolean) => void
   facesDetected: number
   matchResult: string
-  isLookingAway: boolean
+  isLookingAway: boolean,
+  resultSend: boolean
 }
 
-export function ProctorCamera({
+export const ProctorCamera = memo(function ProctorCamera({
   onFacesDetected,
   onMatchResult,
   onLookingAway,
   facesDetected,
   matchResult,
-  isLookingAway
+  isLookingAway,
+  resultSend
 }: ProctorCameraProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -32,7 +37,7 @@ export function ProctorCamera({
   const pendingViolationRef = useRef<'no-face' | 'looking-away' | null>(null)
 
   const captureCanvasRef = useRef<HTMLCanvasElement | null>(null)
-  const screenshotsRef = useRef<{blob: Blob, timestamp: number, type: 'periodic' | 'no-face' | 'looking-away' | 'multiple-faces' }[]>([])
+  const screenshotsRef = useRef<{ blob: Blob, timestamp: number, type: 'periodic' | 'no-face' | 'looking-away' | 'multiple-faces' }[]>([])
 
   const lastViolationTypeRef = useRef<'no-face' | 'looking-away' | 'multiple-faces' | null>(null)
   const periodicIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -45,16 +50,9 @@ export function ProctorCamera({
 
   const PENALTY_PER_VIOLATION = 5
 
-  const [reportData, setReportData] = useState<{
-    gallery: Array<{ url: string; timestamp: number; type: string }>
-    stats: {
-      lookingAwayCount: number
-      noFaceCount: number
-      multipleFacesCount: number
-      totalViolations: number
-      honestyIndex: number
-    }
-  } | null>(null)
+  const [reportData, setReportData] = useState<ProctorType | null>(null);
+
+  const dispatch = useDispatch();
 
   // const { enqueueSnackbar } = useSnackbar();
 
@@ -179,10 +177,17 @@ export function ProctorCamera({
 
     const honestyIndex = Math.max(0, 100 - totalViolations * PENALTY_PER_VIOLATION)
 
-    setReportData({
+    // setReportData({
+    //   gallery,
+    //   stats: { lookingAwayCount, noFaceCount, multipleFacesCount, totalViolations, honestyIndex }
+    // })
+
+    const reportDispatch = {
       gallery,
       stats: { lookingAwayCount, noFaceCount, multipleFacesCount, totalViolations, honestyIndex }
-    })
+    }
+
+    dispatch(addProctorResult(reportDispatch));
   }
 
   const handleFinishTest = () => {
@@ -190,6 +195,12 @@ export function ProctorCamera({
     buildReport()
     setTestFinished(true)
   }
+
+  useEffect(()=> {
+    if(resultSend) {
+      handleFinishTest();
+    }
+  }, [resultSend])
 
   useEffect(() => {
     const video = videoRef.current
@@ -361,11 +372,13 @@ export function ProctorCamera({
 
   useEffect(() => {
     return () => {
-      reportData?.gallery.forEach(item => URL.revokeObjectURL(item.url))
+      reportData?.gallery.forEach(item => URL.revokeObjectURL(item.url));
     }
-  }, [reportData])
+  }, [reportData]);
 
-  const statusColor = isLookingAway ? '#EF4444' : facesDetected === 0 ? '#F59E0B' : '#22C55E'
+  const statusColor = isLookingAway ? '#EF4444' : facesDetected === 0 ? '#F59E0B' : '#12b84f'
+  const triggerColor = loading ? '#475569' : statusColor
+  const triggerFg = triggerColor === '#F59E0B' ? '#2B1B00' : '#FFFFFF'
   const statusText = isLookingAway ? 'Отвернулся' : facesDetected === 0 ? 'Нет лица' : 'Наблюдение активно'
   const triggerText = loading ? 'Инициализация камеры...' : statusText
 
@@ -454,20 +467,47 @@ export function ProctorCamera({
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .proctor-trigger {
-          position: fixed; left: 16px; bottom: 24px; z-index: 999;
-          display: flex; align-items: center; gap: 8px;
-          padding: 9px 20px 9px 14px; background: #0D0F14;
-          border: 1px solid rgba(255,255,255,0.1); border-radius: 99px;
-          cursor: pointer; color: #94A3B8; font-family: 'Inter', sans-serif;
-          font-size: 12px; font-weight: 500; transition: all 0.2s;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-        }
-        .proctor-trigger:hover { border-color: rgba(59,130,246,0.4); color: #E2E8F0; background: #161920; }
-        .proctor-trigger.active { border-color: rgba(59,130,246,0.5); color: #93C5FD; }
-        .trigger-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; transition: background 0.3s; }
-        .proctor-trigger-icon { width: 18px; height: 18px; flex-shrink: 0; }
+        --status: #475569;
+        --on-status: #fff;
+        position: fixed; left: 16px; bottom: 24px; z-index: 999;
+        display: flex; align-items: center; gap: 10px;
+        height: 44px; padding: 0 10px 0 8px;
+        background-color: var(--status);
+        background-image: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(0,0,0,0.12));
+        color: var(--on-status);
+        border: 1px solid rgba(255,255,255,0.28); border-radius: 99px;
+        cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+        box-shadow:
+          0 8px 24px color-mix(in srgb, var(--status) 45%, transparent),
+          inset 0 1px 0 rgba(255,255,255,0.3);
+        transition: background-color 0.4s, box-shadow 0.4s, transform 0.2s;
+      }
+      /* пульсирующее кольцо — «наблюдение идёт» */
+      .proctor-trigger::after {
+        content: ''; position: absolute; inset: -1px; border-radius: inherit;
+        border: 2px solid var(--status); opacity: 0; pointer-events: none;
+        animation: trigger-ring 2.2s ease-out infinite;
+      }
+      @keyframes trigger-ring {
+        0%   { transform: scale(1);          opacity: 0.55; }
+        100% { transform: scale(1.3, 1.6);   opacity: 0; }
+      }
+      // .proctor-trigger:hover  { transform: translateY(-1px); }
+      // .proctor-trigger:active { transform: scale(0.97); }
+      .proctor-trigger.active {
+        box-shadow:
+          0 0 0 3px color-mix(in srgb, var(--status) 35%, transparent),
+          0 8px 24px color-mix(in srgb, var(--status) 45%, transparent),
+          inset 0 1px 0 rgba(255,255,255,0.3);
+      }
+      .trigger-dot {
+        width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+        background: var(--on-status); animation: blink 1.2s ease-in-out infinite;
+      }
+      .proctor-trigger-icon { width: 20px; height: 20px; flex-shrink: 0; font-size: 12px;}
+      .proctor-trigger-label { white-space: nowrap; letter-spacing: 0.01em; font-size: 12px; }
         .proctor-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; }
-        @media (max-width: 640px) {
+        @media (max-width: 840px) {
           .proctor-panel {
             width: 100%; top: auto; height: 75vh; border-right: none;
             border-top: 1px solid rgba(255,255,255,0.08);
@@ -475,7 +515,7 @@ export function ProctorCamera({
             box-shadow: 0 -8px 40px rgba(0,0,0,0.6);
           }
           .proctor-panel.open { transform: translateY(0); }
-          .proctor-trigger { bottom: 20px; left: 50%; transform: translateX(-50%); }
+          .proctor-trigger { top: 80px; left: 40px; transform: translateX(-50%); }
           .proctor-backdrop { display: block; }
           .proctor-backdrop.hidden { display: none; }
           .proctor-video-wrap { aspect-ratio: 16/9; }
@@ -489,16 +529,16 @@ export function ProctorCamera({
         style={{ position: 'fixed', visibility: 'hidden', pointerEvents: 'none', width: 1, height: 1, top: 0, left: 0 }}
       />
 
-      {testFinished ? (
+{/*       
         <div className='fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-slate-950/80 p-6 backdrop-blur-sm'>
           <div className='my-8 w-full max-w-2xl rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl'>
-            {/* Заголовок */}
+            
             <div className='border-b border-slate-800 px-8 py-6'>
               <span className='text-xs font-medium uppercase tracking-wider text-slate-500'>Отчёт прокторинга</span>
               <h2 className='mt-1 text-xl font-semibold text-slate-100'>Тест завершён</h2>
             </div>
 
-            {/* Индекс честности */}
+            
             <div className='flex items-center gap-6 border-b border-slate-800 px-8 py-6'>
               <div
                 className='flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 text-2xl font-bold'
@@ -527,7 +567,7 @@ export function ProctorCamera({
               </div>
             </div>
 
-            {/* Статистика */}
+            
             <div className='grid grid-cols-3 gap-px border-b border-slate-800 bg-slate-800'>
               <div className='bg-slate-900 px-6 py-5 text-center'>
                 <div className='text-2xl font-semibold text-slate-100'>{reportData?.stats.lookingAwayCount ?? 0}</div>
@@ -543,7 +583,7 @@ export function ProctorCamera({
               </div>
             </div>
 
-            {/* Галерея */}
+            
             <div className='px-8 py-6'>
               <div className='mb-4 text-sm font-medium text-slate-300'>
                 Галерея нарушений
@@ -589,8 +629,8 @@ export function ProctorCamera({
               )}
             </div>
           </div>
-        </div>
-      ) : (
+        </div> */}
+      {/* ) : ( */}
         <>
           <div className={`proctor-backdrop ${isOpen ? '' : 'hidden'}`} onClick={() => setIsOpen(false)} />
 
@@ -619,10 +659,14 @@ export function ProctorCamera({
                     autoPlay
                     muted
                     playsInline
+                    // ref={el => {
+                    //   if (el && videoRef.current?.srcObject) {
+                    //     el.srcObject = videoRef.current.srcObject
+                    //   }
+                    // }}
                     ref={el => {
-                      if (el && videoRef.current?.srcObject) {
-                        el.srcObject = videoRef.current.srcObject
-                      }
+                      const stream = videoRef.current?.srcObject
+                      if (el && stream && el.srcObject !== stream) el.srcObject = stream
                     }}
                   />
                   <div className='proctor-video-overlay'>
@@ -686,31 +730,26 @@ export function ProctorCamera({
           </aside>
 
           <button
-            className={`proctor-trigger ${isOpen ? 'active' : ''} py-3`}
+            className={`proctor-trigger ${isOpen ? 'active' : ''}`}
+            style={{ '--status': triggerColor, '--on-status': triggerFg } as React.CSSProperties}
             onClick={() => setIsOpen(v => !v)}
-            aria-label='Показать камеру прокторинга'
+            aria-label={`Прокторинг: ${triggerText}. Показать камеру`}
           >
-            <div className='trigger-dot' style={{ background: loading ? '#475569' : statusColor }} />
-            <svg
-              className='proctor-trigger-icon'
-              viewBox='0 0 20 20'
-              fill='none'
-              stroke='currentColor'
-              strokeWidth='1.5'
-            >
+            <span className='trigger-dot' />
+            <svg className='proctor-trigger-icon' viewBox='0 0 20 20' fill='none' stroke='currentColor' strokeWidth='1.6'>
               <path d='M2 6.5A1.5 1.5 0 013.5 5h9A1.5 1.5 0 0114 6.5v7A1.5 1.5 0 0112.5 15h-9A1.5 1.5 0 012 13.5v-7z' />
               <path d='M14 8.5l4-2v7l-4-2' />
             </svg>
-            <b className={'font-bold text-md'}>{triggerText}</b>
+            <span className='hidden md:block proctor-trigger-label'>{triggerText}</span>
           </button>
 
-          {!loading && (
+          {/* {!loading && (
             <button className='proctor-finish-btn-fixed' onClick={handleFinishTest}>
               Завершить тест
             </button>
-          )}
+          )} */}
         </>
-      )}
     </>
   )
 }
+)

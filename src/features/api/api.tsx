@@ -7,7 +7,7 @@ export const getSubjects = async ()=> {
 }
 
 export const getShowSubject = async (id: number)=> {
-  const data = await apiRequest(axiosInstance.get( `/${id}`));
+  const data = await apiRequest(axiosInstance.get(`/${id}`));
   return data;
 }
 
@@ -17,12 +17,11 @@ export const addSubjects = async (newSubject) => {
 }
 
 export const updateSubjects = async (name: string, id: number | null) => {
-  const data = await apiRequest(axiosInstance.put(`/${id}`, { name }))
+  const data = await apiRequest(axiosInstance.put(`/${id}`, { name }));
   return data;
 }
 
 export const deleteSubject = async (id: number | null) => {
-  const data = await apiRequest(axiosInstance.delete(`/${id}`))
+  const data = await apiRequest(axiosInstance.delete(`/${id}`));
   return data;
 }
-

@@ -197,9 +197,10 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
   return (
     <>
       <ScrollWrapper
+
         {...(isBreakpointReached
           ? {
-              className: 'bs-full overflow-y-auto overflow-x-hidden',
+              className: 'bs-full overflow-y-auto overflow-x-hidden ',
               onScroll: container => scrollMenu(container, false)
             }
           : {
@@ -228,7 +229,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           <SubMenu
             label='Предметы'
             icon={<i className='ri-home-smile-line' />}
-            suffix={<Chip label='5' size='small' color='error' />}
+            // suffix={<Chip label='5' size='small' color='error' />}
           >
             {/* Скрытый MenuItem для того чтобы SubMenu оставалось открытым при нахождении на страницах /teacher/* */}
             <MenuItem href='/teacher' exactMatch={false} activeUrl='/teacher' className='hidden' />
@@ -256,20 +257,6 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
             </div>
 
           </SubMenu>
-            {/*<MenuItem*/}
-            {/*  href={`${process.env.NEXT_PUBLIC_PRO_URL}/dashboards/ecommerce`}*/}
-            {/*  suffix={<Chip label='Pro' size='small' color='primary' variant='tonal' />}*/}
-            {/*  target='_blank'*/}
-            {/*>*/}
-            {/*  eCommerce*/}
-            {/*</MenuItem>*/}
-            {/*<MenuItem*/}
-            {/*  href={`${process.env.NEXT_PUBLIC_PRO_URL}/dashboards/logistics`}*/}
-            {/*  suffix={<Chip label='Pro' size='small' color='primary' variant='tonal' />}*/}
-            {/*  target='_blank'*/}
-            {/*>*/}
-            {/*  Logistics*/}
-            {/*</MenuItem>*/}
         </Menu>
       </ScrollWrapper>
 

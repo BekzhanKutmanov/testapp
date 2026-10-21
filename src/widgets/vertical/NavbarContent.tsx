@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import type { MouseEvent } from 'react'
 
 // MUI Imports
@@ -24,9 +24,13 @@ import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
 
 import UserDropdown from '@/shared/ui/components/UserDropdown'
 import MainTitle from '@/shared/ui/components/MainTitle'
+import { useThemeContext } from '@/features/ThemeContext'
+import { useSettings } from '@core/hooks/useSettings'
 
 const NavbarContent = () => {
   // States
+  const { settings } = useSettings()
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
 
@@ -51,16 +55,19 @@ const NavbarContent = () => {
     <div
       className={classnames(
         verticalLayoutClasses.navbarContent,
-        'bg-backgroundPaper p-4 px-4 rounded-xl border-b-2 border-primary/20 flex items-center justify-between gap-4 is-full'
+        'bg-backgroundPaper p-2 px-4 rounded-ee-xl rounded-es-xl border-b-2 border-primary/20 flex items-center justify-between gap-4 is-full'
       )}
     >
       <div className='flex items-center gap-2 sm:gap-4'>
         <NavToggle />
-        <div className={'hidden sm:flex items-center gap-2'}>
-          {/*<div className={'w-[50px] h-[50px] flex justify-center items-start'}>*/}
-          {/*  <img src={'/images/logo-remove.png'} className={'w-full object-fit'}/>*/}
-          {/*</div>*/}
-          <h2 className={'   sm:text-3xl'}>Система тестирования ОшГУ</h2>
+        <div className={'hidden sm:flex items-center gap-1'}>
+          <div className={' flex justify-center items-start'}>
+            {settings.mode == 'light' ?
+              <img src={'/images/logo-remove.png'} className={'w-[50px] '}/>
+              : <img src={'/images/white-logo.png'} className={'w-[40px] mx-1'}/>
+            }
+          </div>
+          <h2 className={'sm:text-3xl'}>Система тестирования ОшГУ</h2>
         </div>
       </div>
 

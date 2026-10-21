@@ -19,6 +19,7 @@ import useVerticalNav from '@menu/hooks/useVerticalNav'
 
 // Style Imports
 import navigationCustomStyles from '@core/styles/vertical/navigationCustomStyles'
+import { useSettings } from '@core/hooks/useSettings'
 
 const StyledBoxForShadow = styled('div')(({ theme }) => ({
   top: 60,
@@ -38,6 +39,7 @@ const StyledBoxForShadow = styled('div')(({ theme }) => ({
 
 const Navigation = () => {
   // Hooks
+  const { settings } = useSettings()
   const theme = useTheme()
   const { isBreakpointReached, toggleVerticalNav } = useVerticalNav()
 
@@ -65,11 +67,15 @@ const Navigation = () => {
     <VerticalNav customStyles={navigationCustomStyles(theme)}>
       {/* Nav Header including Logo & nav toggle icons  */}
       {/*<NavHeader>*/}
-        {/*<Link href='/'>*/}
-        {/*  <Logo />*/}
-        {/*</Link>*/}
+      {/*  <Link href='/' className={'flex items-center gap-2'}>*/}
+      {/*    <Logo />*/}
+      {/*  </Link>*/}
       {/*</NavHeader>*/}
-      {isBreakpointReached && <div className={'w-full flex justify-end p-3'}>
+      {isBreakpointReached && <div className={'w-full flex justify-between items-center px-4 pt-2'}>
+        {settings.mode == 'light' ?
+          <img src={'/images/logo-remove.png'} className={'w-[40px] '}/>
+          : <img src={'/images/white-logo.png'} className={'w-[35px] mx-1'}/>
+        }
         <i className='ri-close-line text-xl' onClick={() => toggleVerticalNav(false)} />
       </div>}
       <StyledBoxForShadow ref={shadowRef} />
