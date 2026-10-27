@@ -2,10 +2,9 @@ import { Box, Typography, Paper } from '@mui/material';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import InfoBlock from '@/shared/ui/components/InfoBlock'
 
-export default async function DefaultSubject({searchParams }: { searchParams: Record<string, string | string[]> }) {
+export default async function DefaultSubject({searchParams}: { searchParams: Record<string, string | string[]> }) {
   const page = searchParams.page;
   const sort = searchParams.sort;
-  console.log(page, sort)
 
   return (
     <Box
@@ -16,10 +15,9 @@ export default async function DefaultSubject({searchParams }: { searchParams: Re
         p: 3
       }}
     >
-      <InfoBlock>
+      <InfoBlock border={false}>
         <>
           <Box
-            className={'shadow'}
             sx={{
               backgroundColor: 'primary.lighter',
               color: 'primary.main',
