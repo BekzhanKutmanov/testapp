@@ -150,7 +150,6 @@ const Chip = ({ label, count }: { label: string; count: number }) => (
 /* ------------------------------------------------------------------ */
 
 const ProctoringSection = () => {
-
     const proctorResult = useSelector((state) => state ? state.proctorResult.value : null);
     console.log(proctorResult);
 

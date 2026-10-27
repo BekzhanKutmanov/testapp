@@ -32,11 +32,32 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import ShortTextIcon from '@mui/icons-material/ShortText'
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked'
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 
 import { type BreadCrumbType } from '@/shared/model/types/BreadCrumbType'
 
 import BreadCrumb from '@/shared/ui/BreadCrumb'
 import MainTitle from '@/shared/ui/components/MainTitle'
+
+import dynamic from 'next/dynamic';
+// import RichTextField from '@/shared/ui/RichTextField'
+
+const RichTextField = dynamic(
+  () => import('@/shared/ui/RichTextField'),
+  {
+    ssr: false,
+    loading: () => <p>Загрузка редактора формул...</p>
+  }
+);
+
+// Отключаем SSR полностью для этого компонента
+const MathEditorWithNoSSR = dynamic(
+  () => import('@/features/components/MathEditor'),
+  {
+    ssr: false,
+    loading: () => <p>Загрузка редактора формул...</p>
+  }
+);
 
 type QuestionType = 'RADIO' | 'CHECKBOX' | 'TEXT';
 
@@ -94,7 +115,7 @@ const CreateTestClient = () => {
 
     setQuestions(prev => [...prev, newQuestion])
 
-  }, [])
+  }, []);
 
   const deleteQuestion = (id: string) => {
     if (questions.length > 1) {
@@ -235,9 +256,27 @@ const CreateTestClient = () => {
 
   const onDragEnd = () => setDraggedIndex(null);
 
-  useEffect(()=> {
+  // 1. Показать или скрыть блок формулы для конкретного вопроса
+  const toggleQuestionFormula = (questionId, show) => {
+    setQuestions(prev =>
+      prev.map(q => q.id === questionId ? { ...q, showFormula: show } : q)
+    );
+  };
+
+  // 2. Сохранить текст формулы (LaTeX)
+  const handleQuestionFormulaChange = (questionId, newFormula) => {
+    setQuestions(prev =>
+      prev.map(q => q.id === questionId ? { ...q, formula: newFormula } : q)
+    );
+  };
+
+  const titleInnerHtml = (e)=> {
+    <div dangerouslySetInnerHTML={{ __html: e }}/>
+  }
+
+  useEffect(() => {
     console.log(questions);
-  },[questions]);
+  }, [questions]);
 
   return (
     <Container maxWidth={false} sx={{ py: 4, maxWidth: '1800px', px: { xs: 0, sm: 2, md: 4 } }}>
@@ -245,270 +284,351 @@ const CreateTestClient = () => {
 
       <MainTitle title={'Создание нового теста'} />
 
-      <Stack spacing={3}>
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 2, sm: 2.5, md: 3 },
-            borderRadius: '12px',
-            border: '1px solid',
-            borderColor: 'divider',
-            backgroundColor: 'background.paper',
-            borderTop: '6px solid #666cff',
-            boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)'
-          }}
-        >
+      <Paper
+        elevation={0}
+        sx={{
+          overflow: 'hidden',
+          borderRadius: '12px',
+          border: '1px solid',
+          borderColor: 'divider',
+          backgroundColor: 'background.paper',
+          boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)'
+        }}
+      >
+        <Box sx={{ height: 6, width: '100%', backgroundColor: '#666cff' }} />
+
+        <Stack spacing={1.5} sx={{ p: { xs: 2, sm: 2.5 } }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, paddingBottom: '10px' }}>
+            <DescriptionOutlinedIcon sx={{ color: 'primary.main', fontSize: 28 }} />
+            <Typography variant='h5' sx={{ fontWeight: 700, color: 'text.primary' }}>
+              Основная информация
+            </Typography>
+          </Box>
+
           <TextField
             fullWidth
-            variant='standard'
-            placeholder='Название теста'
+            required
+            size='small'
+            label='Название теста'
+            placeholder='Например: Итоговый тест по математике'
             value={testTitle}
             onChange={e => setTestTitle(e.target.value)}
+            inputProps={{ maxLength: 100 }}
             InputProps={{
-              disableUnderline: true,
-              style: { fontSize: '1.8rem', fontWeight: 700 }
+              endAdornment: (
+                <Typography variant='caption' sx={{ ml: 1, whiteSpace: 'nowrap', color: 'text.disabled' }}>
+                  {testTitle.length}/100
+                </Typography>
+              )
             }}
-            sx={{ mb: 1 }}
+            sx={{
+              '& .MuiOutlinedInput-root': { borderRadius: '10px' },
+              '& .MuiInputBase-input': { fontSize: '1.1rem', fontWeight: 600 }
+            }}
           />
+
           <TextField
             fullWidth
-            variant='standard'
-            placeholder='Описание теста...'
             multiline
+            minRows={2}
+            maxRows={6}
+            size='small'
+            label='Описание (необязательно)'
+            placeholder='О чём этот тест, сколько времени займёт...'
             value={testDescription}
             onChange={e => setTestDescription(e.target.value)}
-            InputProps={{
-              disableUnderline: true,
-              style: { fontSize: '1rem' }
-            }}
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
           />
-        </Paper>
-
-        <Stack spacing={2.5}>
-          {questions.map((question, index) => (
-            <Fade in key={question.id}>
-              <Card
-                draggable
-                onDragStart={e => onDragStart(e, index)}
-                onDragOver={e => onDragOver(e, index)}
-                onDragEnd={onDragEnd}
-                sx={{
-                  borderRadius: '12px',
-                  overflow: 'visible',
-                  border: '1px solid',
-                  borderColor: draggedIndex === index ? 'primary.main' : 'divider',
-                  boxShadow:
-                    draggedIndex === index
-                      ? '0px 8px 30px rgba(102, 108, 255, 0.15)'
-                      : '0px 2px 10px rgba(0, 0, 0, 0.03)',
-                  transition: '0.2s',
-                  opacity: draggedIndex === index ? 0.6 : 1
-                }}
-              >
-                <Box
-                  sx={{ display: 'flex', justifyContent: 'center', py: 0.5, color: 'text.disabled', cursor: 'grab' }}
-                >
-                  <DragIndicatorIcon fontSize='small' />
-                </Box>
-
-                <CardContent sx={{ px: { xs: 2, sm: 3, md: 4 }, py: '16px !important', pb: '24px !important' }}>
-                  <Stack spacing={2.5}>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'flex-start' }}>
-                      <Box sx={{ display: 'flex', gap: 1.5, flex: 1, minWidth: '300px' }}>
-                        <Typography
-                          variant='h6'
-                          sx={{ mt: 0.5, fontWeight: 700, minWidth: '25px', color: 'primary.main', fontSize: '1.1rem' }}
-                        >
-                          {index + 1}.
-                        </Typography>
-                        <TextField
-                          fullWidth
-                          placeholder='Ваш вопрос'
-                          variant='outlined'
-                          size='small'
-                          value={question.title}
-                          onChange={e => handleQuestionTitleChange(question.id, e.target.value)}
-                          multiline
-                          sx={{
-                            '& .MuiOutlinedInput-root': { borderRadius: '10px', fontSize: '1rem', fontWeight: 500 }
-                          }}
-                        />
-                      </Box>
-
-                      <FormControl size='small' sx={{ minWidth: 200 }}>
-                        <Select
-                          value={question.type}
-                          onChange={e => handleTypeChange(question.id, e.target.value as QuestionType)}
-                          sx={{ borderRadius: '10px' }}
-                        >
-                          <MenuItem value='RADIO'>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <RadioButtonCheckedIcon fontSize='small' color='action' />
-                              <Typography variant='body2'>Один ответ</Typography>
-                            </Box>
-                          </MenuItem>
-                          <MenuItem value='CHECKBOX'>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <CheckBoxIcon fontSize='small' color='action' />
-                              <Typography variant='body2'>Несколько ответов</Typography>
-                            </Box>
-                          </MenuItem>
-                          <MenuItem value='TEXT'>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <ShortTextIcon fontSize='small' color='action' />
-                              <Typography variant='body2'>Текстовый ответ</Typography>
-                            </Box>
-                          </MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Box>
-
-                    <Divider />
-
-                    {question.type === 'TEXT' ? (
-                      <Box sx={{ px: 1, py: 1 }}>
-                        <TextField
-                          fullWidth
-                          disabled
-                          variant='standard'
-                          placeholder='Текстовый ответ будет введен пользователем'
-                          sx={{ fontStyle: 'italic' }}
-                        />
-                      </Box>
-                    ) : (
-                      <>
-                        <Stack spacing={1}>
-                          {question.options.map((option, optIndex) => {
-                            const isCorrect = question.correctOptionIds.includes(option.id)
-
-                            return (
-                              <Box
-                                key={option.id}
-                                sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 1,
-                                  p: 0.5,
-                                  borderRadius: '10px',
-                                  backgroundColor: isCorrect ? 'rgba(46, 125, 50, 0.04)' : 'transparent',
-                                  border: '1px solid',
-                                  borderColor: isCorrect ? 'success.light' : 'transparent',
-                                  transition: '0.2s'
-                                }}
-                              >
-                                <Tooltip title={isCorrect ? 'Удалить из правильных' : 'Отметить как правильный'}>
-                                  {question.type === 'RADIO' ? (
-                                    <Radio
-                                      size='small'
-                                      checked={isCorrect}
-                                      onChange={() => handleCorrectToggle(question.id, option.id)}
-                                      color='success'
-                                      icon={<CheckCircleIcon sx={{ opacity: 0.2 }} />}
-                                      checkedIcon={<CheckCircleIcon />}
-                                    />
-                                  ) : (
-                                    <Checkbox
-                                      size='small'
-                                      checked={isCorrect}
-                                      onChange={() => handleCorrectToggle(question.id, option.id)}
-                                      color='success'
-                                      icon={<CheckBoxIcon sx={{ opacity: 0.2 }} />}
-                                      checkedIcon={<CheckBoxIcon />}
-                                    />
-                                  )}
-                                </Tooltip>
-                                <TextField
-                                  fullWidth
-                                  size='small'
-                                  variant='standard'
-                                  placeholder={`Вариант ${optIndex + 1}`}
-                                  value={option.text}
-                                  onChange={e => handleOptionTextChange(question.id, option.id, e.target.value)}
-                                  InputProps={{ disableUnderline: true }}
-                                  sx={{
-                                    px: 1,
-                                    '& .MuiInputBase-input': { fontWeight: isCorrect ? 600 : 400, fontSize: '0.95rem' }
-                                  }}
-                                />
-                                <IconButton
-                                  onClick={() => deleteOption(question.id, option.id)}
-                                  disabled={question.options.length <= 2}
-                                  size='small'
-                                  sx={{ color: 'text.disabled', '&:hover': { color: 'error.main' } }}
-                                >
-                                  <DeleteOutlineIcon fontSize='small' />
-                                </IconButton>
-                              </Box>
-                            )
-                          })}
-                        </Stack>
-
-                        <Button
-                          variant='outlined'
-                          size='small'
-                          startIcon={<AddIcon />}
-                          onClick={() => addOption(question.id)}
-                          sx={{
-                            alignSelf: 'flex-start',
-                            borderRadius: '8px',
-                            textTransform: 'none',
-                            borderStyle: 'dashed',
-                            borderWidth: '1.5px',
-                            py: 0.5,
-                            '&:hover': { borderWidth: '1.5px', borderStyle: 'dashed' }
-                          }}
-                        >
-                          Добавить вариант ответа
-                        </Button>
-                      </>
-                    )}
-                  </Stack>
-                </CardContent>
-
-                <Divider />
-
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5, p: 1 }}>
-                  <Tooltip title='Сделать копию'>
-                    <IconButton onClick={() => duplicateQuestion(question)} size='small'>
-                      <ContentCopyIcon fontSize='small' />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title='Удалить вопрос'>
-                    <IconButton
-                      onClick={() => deleteQuestion(question.id)}
-                      color='error'
-                      disabled={questions.length <= 1}
-                      size='small'
-                    >
-                      <DeleteOutlineIcon fontSize='small' />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </Card>
-            </Fade>
-          ))}
         </Stack>
+      </Paper>
 
-        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
-          <Button
-            variant='contained'
-            size='medium'
-            startIcon={<AddIcon />}
-            onClick={addQuestion}
-            sx={{
-              borderRadius: '10px',
-              px: 3,
-              py: 1,
-              boxShadow: '0px 6px 20px rgba(102, 108, 255, 0.25)',
-              textTransform: 'none',
-              fontSize: '1rem',
-              fontWeight: 600
-            }}
-          >
-            Добавить следующий вопрос
-          </Button>
-        </Box>
+      <Stack spacing={2.5} sx={{ marginTop: '10px'}}>
+        {questions.map((question, index) => {
+          // Больше никаких useState здесь! Берем состояние из самого объекта вопроса.
+          const showFormula = Boolean(question.showFormula || question.formula);
+
+          return (
+            <>
+              <Fade in key={question.id}>
+                <Card
+                  // draggable
+                  // onDragStart={e => onDragStart(e, index)}
+                  onDragOver={e => onDragOver(e, index)}
+                  // onDragEnd={onDragEnd}
+                  sx={{
+                    borderRadius: '12px',
+                    overflow: 'visible',
+                    border: '1px solid',
+                    borderColor: draggedIndex === index ? 'primary.main' : 'divider',
+                    boxShadow:
+                      draggedIndex === index
+                        ? '0px 8px 30px rgba(102, 108, 255, 0.15)'
+                        : '0px 2px 10px rgba(0, 0, 0, 0.03)',
+                    transition: '0.2s',
+                    opacity: draggedIndex === index ? 0.6 : 1
+                  }}
+                >
+                  <Box
+                    draggable
+                    onDragStart={e => {
+                      // показываем в качестве "призрака" всю карточку, а не только иконку
+                      const card = (e.currentTarget as HTMLElement).closest('[data-question-card]')
+                      if (card) e.dataTransfer.setDragImage(card as HTMLElement, 20, 20)
+                      onDragStart(e, index)
+                    }}
+                    onDragEnd={onDragEnd}
+                    sx={{ display: 'flex', justifyContent: 'center', py: 0.5, color: 'text.disabled', cursor: 'grab' }}
+                    className='w-full'
+                  >
+                    <DragIndicatorIcon fontSize='small' />
+                  </Box>
+
+                  <CardContent className='w-full' sx={{ px: { xs: 2, sm: 3, md: 4 }, py: '16px !important', pb: '24px !important' }}>
+                    <Stack spacing={2.5} className='w-full'>
+                      {/* Верхняя строка: Номер, Инпут вопроса и Селектор типов */}
+                      <Box className='flex flex-wrap gap-2 items-center '>
+                        <Box sx={{ display: 'flex', gap: 1.5, flex: 1, minWidth: '300px' }}>
+                          <Typography
+                            variant='h6'
+                            sx={{ mt: 0.5, fontWeight: 700, minWidth: '25px', color: 'primary.main', fontSize: '1.1rem' }}
+                          >
+                            {index + 1}.
+                          </Typography>
+                          {/* <TextField
+                            fullWidth
+                            placeholder='Ваш вопрос'
+                            variant='outlined'
+                            size='small'
+                            value={question.title}
+                            onChange={e => handleQuestionTitleChange(question.id, e.target.value)}
+                            multiline
+                            sx={{
+                              '& .MuiOutlinedInput-root': { borderRadius: '10px', fontSize: '1rem', fontWeight: 500 }
+                            }}
+                          /> */}
+                          {/* <div className='w-full'> */}
+                            <RichTextField value={question.title} onChange={(e)=> titleInnerHtml(e)}/>
+                          {/* </div> */}
+                        </Box>
+
+                        <FormControl size='small' sx={{ minWidth: 200 }}>
+                          <Select
+                            value={question.type}
+                            onChange={e => handleTypeChange(question.id, e.target.value as QuestionType)}
+                            sx={{ borderRadius: '10px' }}
+                          >
+                            <MenuItem value='RADIO'>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <RadioButtonCheckedIcon fontSize='small' color='action' />
+                                <Typography variant='body2'>Один ответ</Typography>
+                              </Box>
+                            </MenuItem>
+                            <MenuItem value='CHECKBOX'>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <CheckBoxIcon fontSize='small' color='action' />
+                                <Typography variant='body2'>Несколько ответов</Typography>
+                              </Box>
+                            </MenuItem>
+                            <MenuItem value='TEXT'>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <ShortTextIcon fontSize='small' color='action' />
+                                <Typography variant='body2'>Текстовый ответ</Typography>
+                              </Box>
+                            </MenuItem>
+                          </Select>
+                        </FormControl>
+
+                        {/* КНОПКА ДОБАВЛЕНИЯ / УДАЛЕНИЯ ФОРМУЛЫ */}
+                        <div className="flex items-center justify-between">
+                          {!showFormula ? (
+                            <button
+                              type="button"
+                              onClick={() => toggleQuestionFormula(question.id, true)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors cursor-pointer"
+                            >
+                              <span className='flex'>📐 Мат.<span className='hidden sm:block'>формула</span></span> 
+                            </button>
+                          ) : (
+                            <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                              📐 Мат. <span className='hidden sm:block'>формула</span>
+                            </span>
+                          )}
+                        </div>
+                      </Box>
+
+                      {/* РАСКРЫВАЮЩИЙСЯ БЛОК MATHLIVE */}
+                      {showFormula && (
+                        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 transition-all w-full">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-medium text-slate-600">Редактор формулы (LaTeX)</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                toggleQuestionFormula(question.id, false);
+                                handleQuestionFormulaChange(question.id, ''); // Очищаем формулу
+                              }}
+                              className="text-xs text-red-500 hover:text-red-700 font-medium cursor-pointer"
+                            >
+                              Удалить формулу
+                            </button>
+                          </div>
+
+                          {/* Ваш компонент MathLive */}
+                          <div className="bg-white border border-slate-300 w-full rounded-lg shadow-sm">
+                            <MathEditorWithNoSSR
+                              value={question.formula || ''}
+                              onChange={(newLatex) => handleQuestionFormulaChange(question.id, newLatex)}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      <Divider />
+
+                      {question.type === 'TEXT' ? (
+                        <Box sx={{ px: 1, py: 1 }}>
+                          <TextField
+                            fullWidth
+                            disabled
+                            variant='standard'
+                            placeholder='Текстовый ответ будет введен пользователем'
+                            sx={{ fontStyle: 'italic' }}
+                          />
+                        </Box>
+                      ) : (
+                        <>
+                          <Stack spacing={1}>
+                            {question.options.map((option, optIndex) => {
+                              const isCorrect = question.correctOptionIds.includes(option.id)
+
+                              return (
+                                <Box
+                                  key={option.id}
+                                  sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1,
+                                    p: 0.5,
+                                    borderRadius: '10px',
+                                    backgroundColor: isCorrect ? 'rgba(46, 125, 50, 0.04)' : 'transparent',
+                                    border: '1px solid',
+                                    borderColor: isCorrect ? 'success.light' : 'transparent',
+                                    transition: '0.2s'
+                                  }}
+                                >
+                                  <Tooltip title={isCorrect ? 'Удалить из правильных' : 'Отметить как правильный'}>
+                                    {question.type === 'RADIO' ? (
+                                      <Radio
+                                        size='small'
+                                        checked={isCorrect}
+                                        onChange={() => handleCorrectToggle(question.id, option.id)}
+                                        color='success'
+                                        icon={<CheckCircleIcon sx={{ opacity: 0.2 }} />}
+                                        checkedIcon={<CheckCircleIcon />}
+                                      />
+                                    ) : (
+                                      <Checkbox
+                                        size='small'
+                                        checked={isCorrect}
+                                        onChange={() => handleCorrectToggle(question.id, option.id)}
+                                        color='success'
+                                        icon={<CheckBoxIcon sx={{ opacity: 0.2 }} />}
+                                        checkedIcon={<CheckBoxIcon />}
+                                      />
+                                    )}
+                                  </Tooltip>
+                                  <TextField
+                                    fullWidth
+                                    size='small'
+                                    variant='standard'
+                                    placeholder={`Вариант ${optIndex + 1}`}
+                                    value={option.text}
+                                    onChange={e => handleOptionTextChange(question.id, option.id, e.target.value)} // Подставьте вашу функцию изменения текста варианта
+                                    InputProps={{ disableUnderline: true }}
+                                    sx={{
+                                      px: 1,
+                                      '& .MuiInputBase-input': { fontWeight: isCorrect ? 600 : 400, fontSize: '0.95rem' }
+                                    }}
+                                  />
+                                  <IconButton
+                                    onClick={() => deleteOption(question.id, option.id)}
+                                    disabled={question.options.length <= 2}
+                                    size='small'
+                                  >
+                                    <DeleteOutlineIcon fontSize='small' sx={{ color: 'text.disabled', '&:hover': { color: 'error.main' } }}/>
+                                  </IconButton>
+                                </Box>
+                              )
+                            })}
+                          </Stack>
+
+                          <Button
+                            variant='outlined'
+                            size='small'
+                            startIcon={<AddIcon />}
+                            onClick={() => addOption(question.id)}
+                            sx={{
+                              alignSelf: 'flex-start',
+                              borderRadius: '8px',
+                              textTransform: 'none',
+                              borderStyle: 'dashed',
+                              borderWidth: '1.5px',
+                              py: 0.5,
+                              '&:hover': { borderWidth: '1.5px', borderStyle: 'dashed' }
+                            }}
+                          >
+                            Добавить вариант ответа
+                          </Button>
+                        </>
+                      )}
+                    </Stack>
+                  </CardContent>
+
+                  <Divider />
+
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5, p: 1 }}>
+                    <Tooltip title='Сделать копию'>
+                      <IconButton onClick={() => duplicateQuestion(question)} size='small'>
+                        <ContentCopyIcon fontSize='small' />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title='Удалить вопрос'>
+                      <IconButton
+                        onClick={() => deleteQuestion(question.id)}
+                        color='error'
+                        disabled={questions.length <= 1}
+                        size='small'
+                      >
+                        <DeleteOutlineIcon fontSize='small' />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Card>
+              </Fade>
+            </>
+          );
+        })}
       </Stack>
+
+      <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1, marginTop: '10px' }}>
+        <Button
+          variant='contained'
+          size='medium'
+          startIcon={<AddIcon />}
+          onClick={addQuestion}
+          sx={{
+            borderRadius: '10px',
+            px: 3,
+            py: 1,
+            boxShadow: '0px 6px 20px rgba(102, 108, 255, 0.25)',
+            textTransform: 'none',
+            fontSize: '1rem',
+            fontWeight: 600
+          }}
+        >
+          Добавить следующий вопрос
+        </Button>
+      </Box>
 
       <Box sx={{ position: 'fixed', bottom: 40, right: 40 }}>
         <Tooltip title='Сохранить весь тест' placement='left' arrow>
