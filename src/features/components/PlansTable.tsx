@@ -27,6 +27,7 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import NewPlanDialog from './NewPlanDialog';
 import PlansMobileList from './PlansMobileList';
 import EditPlanDialog, { EditPlanForm } from '@/shared/ui/planning/Editplandialog';
+import Link from 'next/link';
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -312,10 +313,10 @@ export default function PlansTable() {
 
                                 {/* Саны */}
                                 <TableCell className={bodyCell} align="center">
-                                    <span className="inline-flex items-center gap-1 text-sm tabular-nums text-slate-700">
+                                    <Link href={'/planning/connectThemes'} className="inline-flex items-center gap-1 text-sm tabular-nums text-slate-700">
                                         {plan.questionCount ?? DEFAULT_QUESTION_COUNT}
                                         <HelpOutlineRoundedIcon sx={{ fontSize: 16 }} className="!text-blue-500" />
-                                    </span>
+                                    </Link>
                                 </TableCell>
 
                                 {/* Убактысы */}
@@ -366,14 +367,16 @@ export default function PlansTable() {
                                         </Tooltip>
 
                                         <Tooltip title="Студенттер">
-                                            <IconButton
-                                                size="small"
-                                                aria-label="Студенттер"
-                                                // TODO: пока ничего не делает
-                                                className="!rounded-lg !text-indigo-600 hover:!bg-indigo-50"
-                                            >
-                                                <GroupsRoundedIcon fontSize="small" />
-                                            </IconButton>
+                                            <Link href={'/planning/streamConnect'}>
+                                                <IconButton
+                                                    size="small"
+                                                    aria-label="Студенттер"
+                                                    // TODO: пока ничего не делает
+                                                    className="!rounded-lg !text-indigo-600 hover:!bg-indigo-50"
+                                                >
+                                                    <GroupsRoundedIcon fontSize="small" />
+                                                </IconButton>
+                                            </Link>
                                         </Tooltip>
 
                                         <Tooltip title="Өчүрүү">
@@ -419,7 +422,7 @@ export default function PlansTable() {
                 className="md:hidden"
                 plans={filtered}
                 onCopyLink={handleCopyLink}
-                onEdit={(plan)=> {
+                onEdit={(plan) => {
                     setEditingPlan(plan);
                 }}
                 onDelete={(id) => {
