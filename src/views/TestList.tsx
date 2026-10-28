@@ -40,6 +40,7 @@ import ArrowRightAltOutlinedIcon from '@mui/icons-material/ArrowRightAltOutlined
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined'
 import { useThemeContext } from '@/features/ThemeContext'
 import AddIcon from '@mui/icons-material/Add';
+import NewPlanDialog from '@/features/components/NewPlanDialog'
 
 export default function TestListClient({ id }: { id: string }) {
   const { ctxDndFn, setCtxDndFn } = useThemeContext();
@@ -58,6 +59,8 @@ export default function TestListClient({ id }: { id: string }) {
 
   const [testImportFn, setTestImportFn] = useState(false)
   const [exportTestFn, setExportTestFn] = useState(false)
+
+  const [open, setOpen] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['subject', id],
@@ -372,7 +375,8 @@ export default function TestListClient({ id }: { id: string }) {
       bg-backgroundPaper rounded
     '>
       <BreadCrumb />
-
+      <NewPlanDialog open={open} onClose={()=> setOpen((prev)=> !prev)}/>
+        <button onClick={()=> setOpen(true)}>click</button> 
       <Stack direction='row' justifyContent='space-between' alignItems='center' className='mb-6 flex-wrap gap-3'>
         <span
           className={
