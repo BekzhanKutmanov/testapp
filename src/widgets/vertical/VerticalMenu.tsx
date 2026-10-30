@@ -67,7 +67,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
 
   const params = useParams();
 
-  const router = useRouter()
+  const router = useRouter();
 
   const ScrollWrapper = isBreakpointReached ? 'div' : PerfectScrollbar
 
