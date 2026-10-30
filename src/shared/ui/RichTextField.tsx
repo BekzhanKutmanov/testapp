@@ -32,7 +32,7 @@ export default function RichTextField({ value, onChange }: Props) {
   if (!editor) return null
 
   return (
-    <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: '10px', overflowY: 'auto', width: '100%' }} className='h-[70px] sm:h-[80px]'>
+    <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: '10px', overflowY: 'auto', width: '100%' }} className='min-h-[64px] max-h-[140px]'>
       <ToggleButtonGroup size='small' className='max-h-[30px]' sx={{ p: 0.5 }}>
         <ToggleButton
           value='bold'
@@ -68,7 +68,7 @@ export default function RichTextField({ value, onChange }: Props) {
         </ToggleButton>
       </ToggleButtonGroup>
 
-      <Box sx={{ px: 1.5, py: 1, minHeight: 80, '& .ProseMirror': { outline: 'none' } }}>
+      <Box sx={{ px: 1.5, pt: 0.25, pb: 0.75, minHeight: 32, '& .ProseMirror': { outline: 'none' }, '& .ProseMirror p': { my: 0 } }}>
         <EditorContent editor={editor} />
       </Box>
     </Box>

@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { useRef, useState, useEffect, memo } from 'react'
+import { useRef, useState, useEffect, memo } from 'react';
 
 import * as faceapi from 'face-api.js'
 import { enqueueSnackbar } from 'notistack'
@@ -319,7 +319,7 @@ export const ProctorCamera = memo(function ProctorCamera({
       }
     }
 
-    init()
+    init();
 
     return () => {
       // if (intervalRef.current) clearInterval(intervalRef.current)

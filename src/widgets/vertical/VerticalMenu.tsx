@@ -67,7 +67,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
 
   const params = useParams();
 
-  const router = useRouter()
+  const router = useRouter();
 
   const ScrollWrapper = isBreakpointReached ? 'div' : PerfectScrollbar
 
@@ -221,7 +221,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           <MenuItem href='/card-basic' icon={<i className='ri-home-smile-line' />}>
             Панель управления
           </MenuItem>
-          <MenuItem href='/card-basic' icon={<i className='ri-bar-chart-box-line' />}>
+          <MenuItem href='/planning' icon={<i className='ri-bar-chart-box-line' />}>
             Планирование
           </MenuItem>
           {/*</MenuSection>*/}
