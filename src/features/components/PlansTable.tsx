@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import {
+    Pagination,
     Paper,
     Table,
     TableBody,
@@ -13,6 +14,9 @@ import {
     IconButton,
     Snackbar,
     Dialog,
+    MenuItem,
+    Select,
+    useMediaQuery,
 } from '@mui/material';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import LinkRoundedIcon from '@mui/icons-material/LinkRounded';
@@ -80,12 +84,34 @@ export interface Plan {
     duration?: number; // Тесттин убактысы (мин.)
 }
 
+// Мета пагинации с бэкенда (формат Laravel paginate)
+export interface PaginationMeta {
+    current_page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
+}
+
+export interface PlansTableProps {
+    /**
+     * Если передано — серверная пагинация: в таблице показываются планы текущей страницы,
+     * а смена страницы отдаётся наружу через onPageChange.
+     * Если нет — пока работает локальная пагинация по моковым данным.
+     */
+    pagination?: PaginationMeta;
+    onPageChange?: (page: number) => void;
+    /** Смена «строк на странице» (при серверной пагинации — перезапросить с page=1) */
+    onPerPageChange?: (perPage: number) => void;
+}
+
 /* -------------------------------------------------------------------------- */
 /*  Defaults (временные значения, пока нет реальных данных)                    */
 /* -------------------------------------------------------------------------- */
 
 const DEFAULT_QUESTION_COUNT = 20;
 const DEFAULT_DURATION = 30;
+const DEFAULT_PER_PAGE = 5;
+const PER_PAGE_OPTIONS = [5, 10, 25, 50];
 
 // TODO(real data): название предмета из поля «Предмети» выбранного плана
 const DEFAULT_SUBJECT = 'дуйно тарыхы';
@@ -107,6 +133,13 @@ const INITIAL_PLANS: Plan[] = [
     { id: 43831, title: 'jljk 2', group: 'Ссылка', startAt: '2026-10-07 13:39:00', endAt: '2026-10-31 13:39:00' },
     { id: 38192, title: 'new', group: 'MyEDU', startAt: '2026-04-03 13:21:00', endAt: '2026-04-05 13:21:00' },
     { id: 38191, title: 'jljk', group: 'Ссылка', startAt: '2026-04-07 13:15:00', endAt: '2026-04-17 13:15:00' },
+
+    { id: 4331, title: 'jljk 2', group: 'Ссылка', startAt: '2026-10-07 13:39:00', endAt: '2026-10-31 13:39:00' },
+    { id: 3192, title: 'new', group: 'MyEDU', startAt: '2026-04-03 13:21:00', endAt: '2026-04-05 13:21:00' },
+    { id: 391, title: 'jljk', group: 'Ссылка', startAt: '2026-04-07 13:15:00', endAt: '2026-04-17 13:15:00' },
+    { id: 433, title: 'jljk 2', group: 'Ссылка', startAt: '2026-10-07 13:39:00', endAt: '2026-10-31 13:39:00' },
+    { id: 312, title: 'new', group: 'MyEDU', startAt: '2026-04-03 13:21:00', endAt: '2026-04-05 13:21:00' },
+    { id: 39, title: 'jljk', group: 'Ссылка', startAt: '2026-04-07 13:15:00', endAt: '2026-04-17 13:15:00' },
 ];
 
 // TODO: заменить на реальные списки с бэкенда
@@ -144,7 +177,14 @@ const bodyCell = '!border-slate-100 !py-3.5';
 /*  Component                                                                 */
 /* -------------------------------------------------------------------------- */
 
-export default function PlansTable() {
+export default function PlansTable({ pagination, onPageChange, onPerPageChange }: PlansTableProps = {
+    pagination: {
+        current_page: 1,
+        per_page: 2,
+        total: 6,
+        last_page: 6,
+    }
+}) {
     const [plans, setPlans] = useState<Plan[]>(INITIAL_PLANS);
     const [query, setQuery] = useState('');
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -160,6 +200,43 @@ export default function PlansTable() {
             (p) => p.title.toLowerCase().includes(q) || String(p.id).includes(q),
         );
     }, [plans, query]);
+
+    /* ---------------------------- Pagination -------------------------------- */
+
+    const [localPage, setLocalPage] = useState(1);
+    const [localPerPage, setLocalPerPage] = useState(DEFAULT_PER_PAGE);
+    const isMobile = useMediaQuery('(max-width:599px)');
+
+    const isServer = Boolean(pagination);
+    const perPage = pagination?.per_page ?? localPerPage;
+    const total = pagination?.total ?? filtered.length;
+    const pageCount = pagination?.last_page ?? Math.max(1, Math.ceil(filtered.length / perPage));
+    const page = pagination?.current_page ?? Math.min(localPage, pageCount);
+
+    // При серверной пагинации бэкенд уже вернул нужную страницу
+    const pagedPlans = isServer ? filtered : filtered.slice((page - 1) * perPage, page * perPage);
+
+    const rangeFrom = total === 0 ? 0 : (page - 1) * perPage + 1;
+    const rangeTo = Math.min(page * perPage, total);
+
+    // Новый поиск — с первой страницы
+    useEffect(() => {
+        if (!isServer) setLocalPage(1);
+    }, [query, isServer]);
+
+    const handlePageChange = (_: ChangeEvent<unknown>, value: number) => {
+        if (isServer) onPageChange?.(value);
+        else setLocalPage(value);
+    };
+
+    const handlePerPageChange = (value: number) => {
+        if (isServer) {
+            onPerPageChange?.(value);
+        } else {
+            setLocalPerPage(value);
+            setLocalPage(1);
+        }
+    };
 
     /* ----------------------------- Actions ---------------------------------- */
 
@@ -239,7 +316,7 @@ export default function PlansTable() {
             {/* Toolbar */}
             <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <h1 className="w-full text-lg font-semibold text-slate-900">
-                    Баары <span className="ml-1 text-sm font-normal text-slate-400">{filtered.length}</span>
+                    Баары <span className="ml-1 text-sm font-normal text-slate-400">{total}</span>
                 </h1>
 
                 <div className="flex items-start sm:items-center justify-end gap-2 flex-col sm:flex-row w-full">
@@ -288,7 +365,7 @@ export default function PlansTable() {
                     </TableHead>
 
                     <TableBody>
-                        {filtered.map((plan) => (
+                        {pagedPlans.map((plan) => (
                             <TableRow
                                 key={plan.id}
                                 hover
@@ -394,7 +471,7 @@ export default function PlansTable() {
                             </TableRow>
                         ))}
 
-                        {filtered.length === 0 && (
+                        {pagedPlans.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={8} align="center" className="!py-12 !text-slate-400">
                                     Эч нерсе табылган жок
@@ -420,7 +497,7 @@ export default function PlansTable() {
 
             <PlansMobileList
                 className="md:hidden"
-                plans={filtered}
+                plans={pagedPlans}
                 onCopyLink={handleCopyLink}
                 onEdit={(plan) => {
                     setEditingPlan(plan);
@@ -430,6 +507,28 @@ export default function PlansTable() {
                     if (plan) requestDelete(plan);
                 }}
             />
+
+            {/* Пагинация (общая для таблицы и мобильного списка) */}
+            {total > 0 && (
+                <div className="mt-4 flex flex-col items-center justify-between gap-3 sm:flex-row">
+                    {/* <span className="text-xs tabular-nums text-slate-500">
+                        {rangeFrom}–{rangeTo} / {total}
+                    </span> */}
+
+                    {pageCount > 1 && (
+                        <Pagination
+                            page={page}
+                            count={pageCount}
+                            onChange={handlePageChange}
+                            color="primary"
+                            shape="rounded"
+                            size="small"
+                            siblingCount={1}
+                            boundaryCount={1}
+                        />
+                    )}
+                </div>
+            )}
 
             <Snackbar
                 open={!!toast}
