@@ -559,7 +559,8 @@ export default function PlansTable({ pagination, onPageChange, onPerPageChange }
 
                     <h2 className="text-xl font-semibold text-slate-900">Пландоону өчүрүү</h2>
                     <p className="mt-2 text-sm text-slate-500">
-                        «{deleteTarget?.title}» (#{deleteTarget?.id}) өчүрүлөт. Бул аракетти кайтаруу мүмкүн эмес.
+                        <span className='max-w-[250px] break-words text-blue-500'>«{deleteTarget?.title}»</span>
+                        (#{deleteTarget?.id}) өчүрүлөт. Бул аракетти кайтаруу мүмкүн эмес.
                     </p>
 
                     <div className="mt-8 flex justify-end gap-3">

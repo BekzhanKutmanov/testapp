@@ -153,7 +153,8 @@ export default function CreateTestNavigator({ items, onSelect, onAddQuestion }: 
   const statusClasses = (answered: boolean) =>
     answered
       ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-      : 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100'
+      // : 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100'
+      : 'border-red-200 bg-red-100 text-red-600 hover:bg-red-100'
 
   const segmentBtn = (active: boolean) =>
     `flex-1 rounded-md px-2 py-1 text-xs font-semibold transition-colors ${
