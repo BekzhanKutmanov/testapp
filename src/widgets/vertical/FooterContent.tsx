@@ -28,12 +28,10 @@ const FooterContent = () => {
     //
     // </div>
     <Box
-      sx={(theme) => ({
-        backgroundColor:
-          theme.palette.mode === 'light' ? 'var(--myDarkColor)' : 'var(--myWhiteColor)',
-        color:
-          theme.palette.mode === 'light' ? 'var(--myWhiteColor)' : 'var(--myDarkColor)'
-      })}
+      sx={{
+        backgroundColor: 'var(--myDarkColor)',
+        color: 'var(--myWhiteColor)'
+      }}
       className={'p-2 rounded flex justify-center p-3 items-center gap-2'}
     >
       <CopyrightIcon className={'font-light text-[14px]'}/> ОшГУ 2020-г

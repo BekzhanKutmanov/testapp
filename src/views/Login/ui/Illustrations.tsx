@@ -7,12 +7,6 @@ import type { ReactNode } from 'react'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { styled, useTheme } from '@mui/material/styles'
 
-// Type Imports
-import type { Mode } from '@core/types'
-
-// Hook Imports
-import { useImageVariant } from '@core/hooks/useImageVariant'
-
 type ImageObj = {
   src: string
   alt?: string
@@ -25,7 +19,6 @@ type IllustrationsProp = {
   image1?: ReactNode | ImageObj
   image2?: ReactNode | ImageObj
   maskImg?: ReactNode | ImageObj
-  mode?: Mode
 }
 
 // Styled Components
@@ -38,16 +31,14 @@ const MaskImg = styled('img')({
 
 const Illustrations = (props: IllustrationsProp) => {
   // Props
-  const { image1, image2, maskImg, mode } = props
+  const { image1, image2, maskImg } = props
 
   // Vars
-  const darkImg = '/images/pages/misc-mask-dark.png'
-  const lightImg = '/images/pages/misc-mask-light.png'
+  const maskBackground = '/images/pages/misc-mask-light.png'
 
   // Hook
   const theme = useTheme()
   const hidden = useMediaQuery(theme.breakpoints.down('md'))
-  const maskBackground = useImageVariant(mode as Mode, lightImg, darkImg)
 
   function isImageObj(obj: any): obj is ImageObj {
     return obj && typeof obj === 'object' && 'src' in obj

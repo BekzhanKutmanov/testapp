@@ -22,20 +22,14 @@ import InputAdornment from '@mui/material/InputAdornment'
 import Button from '@mui/material/Button'
 import { enqueueSnackbar } from 'notistack'
 
-// Type Imports
-import type { Mode } from '@core/types'
-
 // Component Imports
 import Illustrations from '@views/Login/ui/Illustrations'
-
-// Hook Import
-import { useImageVariant } from '@core/hooks/useImageVariant'
 
 import { adToken, getLogin } from '@/shared/api/auth/auth'
 import { toastMessages } from '@/shared/constants/toastMessages'
 import { useLang } from '@/shared/i18n'
 
-const Login = ({ mode }: { mode: Mode }) => {
+const Login = () => {
   const { t } = useLang()
   // States
   const [isPasswordShown, setIsPasswordShown] = useState(false)
@@ -54,12 +48,10 @@ const Login = ({ mode }: { mode: Mode }) => {
   })
 
   // Vars
-  const darkImg = '/images/pages/auth-v1-mask-dark.png'
-  const lightImg = '/images/pages/auth-v1-mask-light.png'
+  const authBackground = '/images/pages/auth-v1-mask-light.png'
 
   // Hooks
   const router = useRouter()
-  const authBackground = useImageVariant(mode, lightImg, darkImg)
 
   const handleClickShowPassword = () => setIsPasswordShown(show => !show)
 
