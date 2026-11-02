@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import React from 'react'
+import { useLang } from '@/shared/i18n'
 
 interface Subject {
   id: number
@@ -15,6 +16,7 @@ interface MobileNavigationSubjectsProps {
 
 export default function MobileNavigationSubjects({ data, onClose }: MobileNavigationSubjectsProps) {
   const router = useRouter()
+  const { t } = useLang()
 
   const handleNavigation = (id: number) => {
     router.push(`/teacher/${id}`)
@@ -23,7 +25,7 @@ export default function MobileNavigationSubjects({ data, onClose }: MobileNaviga
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-lg rounded-t-lg py-3 px-4 max-h-28 overflow-y-auto">
-      <h3 className="text-lg font-semibold mb-2 text-gray-800">Предметы</h3>
+      <h3 className="text-lg font-semibold mb-2 text-gray-800">{t.common.subjects}</h3>
       <nav>
         <ul className="flex overflow-x-auto pb-2
                    [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-blue-400 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-blue-500">

@@ -1,10 +1,12 @@
 import { Box, Typography, Paper } from '@mui/material';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import InfoBlock from '@/shared/ui/components/InfoBlock'
+import { getT } from '@/shared/i18n/server'
 
 export default async function DefaultSubject({searchParams}: { searchParams: Record<string, string | string[]> }) {
   const page = searchParams.page;
   const sort = searchParams.sort;
+  const t = getT();
 
   return (
     <Box
@@ -32,10 +34,10 @@ export default async function DefaultSubject({searchParams}: { searchParams: Rec
             <LibraryBooksIcon sx={{ fontSize: 48 }} />
           </Box>
           <Typography variant="h4" gutterBottom className="font-bold text-textPrimary">
-            Предметы
+            {t.common.subjects}
           </Typography>
           <Typography variant="body1" color="textSecondary" sx={{ mb: 4, maxWidth: 300 }}>
-            Пожалуйста, выберите предмет из списка слева, чтобы увидеть доступные тесты или создать новые.
+            {t.teacherHome.hint}
           </Typography>
         </>
       </InfoBlock>

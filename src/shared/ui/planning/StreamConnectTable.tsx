@@ -15,6 +15,7 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
+import { useLang } from '@/shared/i18n';
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -72,6 +73,7 @@ function ScoreBadge({ value }: { value: number }) {
 /* -------------------------------------------------------------------------- */
 
 export default function StudentsTable({ students, onAddClick, onDelete }: StudentsTableProps) {
+  const { t } = useLang();
   const rows = students.map(withDefaults);
 
   return (
@@ -79,7 +81,7 @@ export default function StudentsTable({ students, onAddClick, onDelete }: Studen
       {/* Toolbar */}
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-lg font-semibold text-slate-900">
-          Всего <span className="ml-1 text-sm font-normal text-slate-400">{rows.length}</span>
+          {t.common.total} <span className="ml-1 text-sm font-normal text-slate-400">{rows.length}</span>
         </h1>
 
         <button
@@ -88,7 +90,7 @@ export default function StudentsTable({ students, onAddClick, onDelete }: Studen
           className="inline-flex h-10 items-center gap-1 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
         >
           <AddRoundedIcon fontSize="small" />
-          Агымды тандоо
+          {t.planning.chooseStream}
         </button>
       </div>
 
@@ -96,8 +98,8 @@ export default function StudentsTable({ students, onAddClick, onDelete }: Studen
       {rows.length === 0 && (
         <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-white py-14 text-center">
           <PersonOutlineRoundedIcon className="!text-slate-300" sx={{ fontSize: 40 }} />
-          <p className="text-sm font-medium text-slate-600">Студенттер жок</p>
-          <p className="text-xs text-slate-400">«Агымды тандоо» баскычы менен кошуңуз</p>
+          <p className="text-sm font-medium text-slate-600">{t.planning.noStudents}</p>
+          <p className="text-xs text-slate-400">{t.planning.addStreamHint}</p>
         </div>
       )}
 
@@ -114,12 +116,12 @@ export default function StudentsTable({ students, onAddClick, onDelete }: Studen
                 <TableRow>
                   <TableCell className={headCell} width={56}>#</TableCell>
                   <TableCell className={headCell} width={48} align="center">?</TableCell>
-                  <TableCell className={headCell}>ФАА</TableCell>
-                  <TableCell className={headCell}>Тайпа</TableCell>
-                  <TableCell className={headCell}>Дисц.</TableCell>
-                  <TableCell className={headCell} align="center">Балл</TableCell>
-                  <TableCell className={headCell}>Эскертүү</TableCell>
-                  <TableCell className={headCell} align="right">Өчүрүү</TableCell>
+                  <TableCell className={headCell}>{t.planning.colFullName}</TableCell>
+                  <TableCell className={headCell}>{t.common.group}</TableCell>
+                  <TableCell className={headCell}>{t.planning.colDiscipline}</TableCell>
+                  <TableCell className={headCell} align="center">{t.planning.colScore}</TableCell>
+                  <TableCell className={headCell}>{t.planning.colNote}</TableCell>
+                  <TableCell className={headCell} align="right">{t.common.delete}</TableCell>
                 </TableRow>
               </TableHead>
 
@@ -158,10 +160,10 @@ export default function StudentsTable({ students, onAddClick, onDelete }: Studen
                     </TableCell>
 
                     <TableCell className={bodyCell} align="right">
-                      <Tooltip title="Өчүрүү">
+                      <Tooltip title={t.common.delete}>
                         <IconButton
                           size="small"
-                          aria-label="Өчүрүү"
+                          aria-label={t.common.delete}
                           onClick={() => onDelete(s.id)}
                           className="!rounded-lg !text-rose-500 hover:!bg-rose-50"
                         >
@@ -200,7 +202,7 @@ export default function StudentsTable({ students, onAddClick, onDelete }: Studen
                   <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2.5">
                     <span className="min-w-0 text-xs text-slate-600">{s.discipline}</span>
                     <span className="flex shrink-0 items-center gap-1.5 text-xs text-slate-400">
-                      Балл <ScoreBadge value={s.score} />
+                      {t.planning.colScore} <ScoreBadge value={s.score} />
                     </span>
                   </div>
 
@@ -209,7 +211,7 @@ export default function StudentsTable({ students, onAddClick, onDelete }: Studen
 
                 <div className="flex justify-end border-t border-slate-100 px-2 py-1.5">
                   <IconButton
-                    aria-label="Өчүрүү"
+                    aria-label={t.common.delete}
                     onClick={() => onDelete(s.id)}
                     className="!rounded-xl !p-2.5 !text-rose-500 active:!bg-rose-50"
                   >

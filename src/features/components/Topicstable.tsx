@@ -17,6 +17,7 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 
 import TopicsMobileList from './Topicsmobilelist';
+import { useLang } from '@/shared/i18n';
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -91,6 +92,7 @@ const labelClass = 'pointer-events-none absolute left-4 top-2 text-xs text-slate
 /* -------------------------------------------------------------------------- */
 
 export default function TopicsTable() {
+    const { t } = useLang();
     const [topics, setTopics] = useState<Topic[]>(INITIAL_TOPICS);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [form, setForm] = useState<TopicForm>(EMPTY_FORM);
@@ -137,8 +139,8 @@ export default function TopicsTable() {
 
     // Конфиг селектов, чтобы не повторять разметку
     const selectFields: { key: 'teacherId' | 'subjectId' | 'testId'; label: string; options: Option[] }[] = [
-        { key: 'teacherId', label: 'Окутуучу', options: OPTIONS.teachers },
-        { key: 'subjectId', label: 'Предмети', options: OPTIONS.subjects },
+        { key: 'teacherId', label: t.planning.teacher, options: OPTIONS.teachers },
+        { key: 'subjectId', label: t.common.subject, options: OPTIONS.subjects },
         { key: 'testId', label: 'Тест', options: OPTIONS.tests },
     ];
 
@@ -149,7 +151,7 @@ export default function TopicsTable() {
             {/* Toolbar */}
             <div className="mb-4 flex items-center justify-between gap-3">
                 <h1 className="text-lg font-semibold text-slate-900">
-                    Баары <span className="ml-1 text-sm font-normal text-slate-400">{topics.length}</span>
+                    {t.common.all} <span className="ml-1 text-sm font-normal text-slate-400">{topics.length}</span>
                 </h1>
 
                 <button
@@ -158,7 +160,7 @@ export default function TopicsTable() {
                     className="inline-flex h-10 cursor-pointer items-center justify-center gap-1 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
                 >
                     <AddRoundedIcon fontSize="small" />
-                    Тема
+                    {t.planning.theme}
                 </button>
             </div>
 
@@ -172,10 +174,10 @@ export default function TopicsTable() {
                     <TableHead>
                         <TableRow>
                             <TableCell className={headCell}>#</TableCell>
-                            <TableCell className={headCell}>Окутуучу</TableCell>
-                            <TableCell className={headCell}>Предмети</TableCell>
-                            <TableCell className={headCell}>Тести</TableCell>
-                            <TableCell className={headCell} align="right">Суроонун саны</TableCell>
+                            <TableCell className={headCell}>{t.planning.teacher}</TableCell>
+                            <TableCell className={headCell}>{t.common.subject}</TableCell>
+                            <TableCell className={headCell}>{t.common.test}</TableCell>
+                            <TableCell className={headCell} align="right">{t.planning.questionCount}</TableCell>
                         </TableRow>
                     </TableHead>
 
@@ -199,7 +201,7 @@ export default function TopicsTable() {
                         {topics.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={5} align="center" className="!py-12 !text-slate-400">
-                                    Эч нерсе табылган жок
+                                    {t.common.nothingFound}
                                 </TableCell>
                             </TableRow>
                         )}
@@ -220,8 +222,8 @@ export default function TopicsTable() {
             >
                 <form onSubmit={handleSubmit} className="p-6 sm:p-8">
                     <div className="mb-6 flex items-center justify-between">
-                        <h2 className="text-2xl font-semibold text-slate-900">Жаңы пландоо</h2>
-                        <IconButton size="small" aria-label="Жабуу" onClick={closeDialog} className="!text-slate-400">
+                        <h2 className="text-2xl font-semibold text-slate-900">{t.planning.newPlan}</h2>
+                        <IconButton size="small" aria-label={t.common.close} onClick={closeDialog} className="!text-slate-400">
                             <CloseRoundedIcon />
                         </IconButton>
                     </div>
@@ -241,7 +243,7 @@ export default function TopicsTable() {
                                     }`}
                                 >
                                     <option value="" disabled>
-                                        Тандаңыз
+                                        {t.common.select}
                                     </option>
                                     {options.map((o) => (
                                         <option key={o.id} value={o.id} className="text-slate-800">
@@ -255,7 +257,7 @@ export default function TopicsTable() {
 
                         <div className="relative">
                             <label htmlFor="topic-count" className={labelClass}>
-                                Суроонун саны
+                                {t.planning.questionCount}
                             </label>
                             <input
                                 id="topic-count"
@@ -276,14 +278,14 @@ export default function TopicsTable() {
                             onClick={closeDialog}
                             className="h-12 cursor-pointer rounded-xl bg-red-400 px-6 text-sm font-semibold text-white transition-colors hover:bg-red-500"
                         >
-                            Жокко чыгаруу
+                            {t.common.cancel}
                         </button>
                         <button
                             type="submit"
                             disabled={!canSubmit}
                             className="h-12 cursor-pointer rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white shadow-md shadow-blue-600/30 transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            Кошуу
+                            {t.common.add}
                         </button>
                     </div>
                 </form>

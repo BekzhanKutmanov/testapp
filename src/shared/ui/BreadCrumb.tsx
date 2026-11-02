@@ -6,17 +6,21 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { buildBreadcrumbs } from '@/shared/lib/breadcrumbs/buildBreadcrumbs'
+import { useLang } from '@/shared/i18n'
 
 export default function BreadCrumb() {
   const pathname = usePathname();
+  const { t } = useLang()
 
   const [breadCrumb, setBreadCrumb] = useState<BreadCrumbType[] | null>(null);
 
+  const label = (item: BreadCrumbType) => t.breadcrumbs[item?.label as keyof typeof t.breadcrumbs] ?? item?.label
+
   const textContent = (item: BreadCrumbType)=> {
     if(item?.href === pathname){
-      return <b className={'text-sm'}>{item?.label}</b>
+      return <b className={'text-sm'}>{label(item)}</b>
     } else {
-      return <Link className={'text-blue-500 text-sm hover:text-blue-800 transition-colors'} href={item?.href}>{item?.label}</Link>
+      return <Link className={'text-blue-500 text-sm hover:text-blue-800 transition-colors'} href={item?.href}>{label(item)}</Link>
     }
   }
 

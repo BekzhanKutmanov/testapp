@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Dialog, IconButton } from '@mui/material';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import { useLang } from '@/shared/i18n';
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -46,6 +47,7 @@ const labelClass =
 /* -------------------------------------------------------------------------- */
 
 export default function EditPlanDialog({ plan, onClose, onSubmit }: Props) {
+    const { t } = useLang();
     // Черновик: живёт только внутри модалки
     const [form, setForm] = useState<EditPlanForm>({ title: '', startAt: '', endAt: '' });
 
@@ -82,8 +84,8 @@ export default function EditPlanDialog({ plan, onClose, onSubmit }: Props) {
             <form onSubmit={handleSubmit} className="p-6 sm:p-8">
                 {/* Header */}
                 <div className="mb-6 flex items-center justify-between">
-                    <h2 className="text-2xl font-semibold text-slate-900">Өзгөртүү</h2>
-                    <IconButton size="small" aria-label="Жабуу" onClick={onClose} className="!text-slate-400">
+                    <h2 className="text-2xl font-semibold text-slate-900">{t.common.change}</h2>
+                    <IconButton size="small" aria-label={t.common.close} onClick={onClose} className="!text-slate-400">
                         <CloseRoundedIcon />
                     </IconButton>
                 </div>
@@ -91,7 +93,7 @@ export default function EditPlanDialog({ plan, onClose, onSubmit }: Props) {
                 {/* Body */}
                 <div className="flex flex-col gap-4">
                     <div className="relative">
-                        <label htmlFor="plan-title" className={labelClass}>Аталышы</label>
+                        <label htmlFor="plan-title" className={labelClass}>{t.common.title}</label>
                         <input
                             id="plan-title"
                             type="text"
@@ -103,7 +105,7 @@ export default function EditPlanDialog({ plan, onClose, onSubmit }: Props) {
 
                     <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:gap-3">
                         <div className="relative flex-1">
-                            <label htmlFor="plan-start" className={labelClass}>Башталышы</label>
+                            <label htmlFor="plan-start" className={labelClass}>{t.planning.start}</label>
                             <input
                                 id="plan-start"
                                 type="datetime-local"
@@ -116,7 +118,7 @@ export default function EditPlanDialog({ plan, onClose, onSubmit }: Props) {
                         <span className="hidden h-px w-4 shrink-0 bg-slate-300 sm:block" />
 
                         <div className="relative flex-1">
-                            <label htmlFor="plan-end" className={labelClass}>Аягы</label>
+                            <label htmlFor="plan-end" className={labelClass}>{t.planning.end}</label>
                             <input
                                 id="plan-end"
                                 type="datetime-local"
@@ -130,7 +132,7 @@ export default function EditPlanDialog({ plan, onClose, onSubmit }: Props) {
 
                     {datesInvalid && (
                         <p className="-mt-2 text-xs text-rose-500">
-                            Аягы башталышынан кийин болушу керек
+                            {t.planning.endAfterStart}
                         </p>
                     )}
                 </div>
@@ -142,14 +144,14 @@ export default function EditPlanDialog({ plan, onClose, onSubmit }: Props) {
                         onClick={onClose}
                         className="h-12 cursor-pointer rounded-xl bg-red-400 px-6 text-sm font-semibold text-white transition-colors hover:bg-red-500"
                     >
-                        Артка
+                        {t.common.back}
                     </button>
                     <button
                         type="submit"
                         disabled={!canSubmit}
                         className="h-12 cursor-pointer rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white shadow-md shadow-blue-600/30 transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        Өзгөртүү
+                        {t.common.change}
                     </button>
                 </div>
             </form>

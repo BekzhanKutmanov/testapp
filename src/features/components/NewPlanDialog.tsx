@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
+import { useLang } from '@/shared/i18n';
 
 /**
  * Required: @mui/material @mui/icons-material @emotion/react @emotion/styled (MUI v6/v7)
@@ -136,6 +137,7 @@ export default function NewPlanDialog({
     types,
     questionSets,
 }: NewPlan) {
+    const { t } = useLang();
     const [form, setForm] = useState<TestInitialState>(initialState);
     const [showMore, setShowMore] = useState(false);
 
@@ -182,12 +184,12 @@ export default function NewPlanDialog({
             {/* Header */}
             <DialogTitle className="!flex !items-center !justify-between !px-6 !pb-2 !pt-5">
                 <span className="text-xl font-semibold tracking-tight text-slate-900">
-                    Жаңы пландоо
+                    {t.planning.newPlan}
                 </span>
                 <IconButton
                     onClick={handleClose}
                     size="small"
-                    aria-label="Жабуу"
+                    aria-label={t.common.close}
                     className="!text-slate-400 hover:!bg-slate-100 hover:!text-slate-600"
                 >
                     <CloseRoundedIcon fontSize="small" />
@@ -199,25 +201,25 @@ export default function NewPlanDialog({
                 <div className="flex flex-col gap-4 pt-2">
                     <TextField
                         fullWidth
-                        label="Аталышы"
+                        label={t.common.title}
                         value={form.title}
                         onChange={set('title')}
                         sx={fieldSx}
                     />
 
-                    <Select label="Окутуучу" value={form.teacherId} onChange={set('teacherId')} items={teachers} />
+                    <Select label={t.planning.teacher} value={form.teacherId} onChange={set('teacherId')} items={teachers} />
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <Select label="Предмети" value={form.subjectId} onChange={set('subjectId')} items={subjects} />
-                        <Select label="Тайпа" value={form.groupId} onChange={set('groupId')} items={groups} />
+                        <Select label={t.common.subject} value={form.subjectId} onChange={set('subjectId')} items={subjects} />
+                        <Select label={t.common.group} value={form.groupId} onChange={set('groupId')} items={groups} />
                     </div>
 
                     <Select label="Тест" value={form.testId} onChange={set('testId')} items={tests} />
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <Select label="Тиби" value={form.typeId} onChange={set('typeId')} items={types} />
+                        <Select label={t.planning.type} value={form.typeId} onChange={set('typeId')} items={types} />
                         <Select
-                            label="Берилүүчү суроонун саны жана убактысы"
+                            label={t.planning.questionCountAndTime}
                             value={form.questionSetId}
                             onChange={set('questionSetId')}
                             items={questionSets}
@@ -227,11 +229,11 @@ export default function NewPlanDialog({
 
                     {/* Башталышы — Аягы в один ряд */}
                     <div className="flex items-center gap-3">
-                        <div className="min-w-0 flex-1">{dateField('Башталышы', 'startAt')}</div>
+                        <div className="min-w-0 flex-1">{dateField(t.planning.start, 'startAt')}</div>
                         <span className="select-none text-slate-300" aria-hidden>
                             —
                         </span>
-                        <div className="min-w-0 flex-1">{dateField('Аягы', 'endAt')}</div>
+                        <div className="min-w-0 flex-1">{dateField(t.planning.end, 'endAt')}</div>
                     </div>
 
                     {/* Дополнительные настройки */}
@@ -242,7 +244,7 @@ export default function NewPlanDialog({
                             aria-expanded={showMore}
                             className="inline-flex items-center gap-1 rounded-md text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 cursor-pointer"
                         >
-                            Кошумча параметрлер
+                            {t.planning.extraParams}
                             <ExpandMoreRoundedIcon
                                 fontSize="small"
                                 className={`transition-transform duration-200 ${showMore ? 'rotate-180' : ''}`}
@@ -252,17 +254,17 @@ export default function NewPlanDialog({
                         <Collapse in={showMore} unmountOnExit>
                             <div className="mt-2 divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white p-1">
                                 <ToggleRow
-                                    label="Тесттин суроолорун студенттер көрө алат"
+                                    label={t.planning.studentsSeeQuestions}
                                     checked={form.showQuestionsToStudents}
                                     onChange={toggle('showQuestionsToStudents')}
                                 />
                                 <ToggleRow
-                                    label="Суроолор аралаштырылбайт"
+                                    label={t.planning.noShuffle}
                                     checked={form.noShuffle}
                                     onChange={toggle('noShuffle')}
                                 />
                                 <ToggleRow
-                                    label="Телефондон кире алат"
+                                    label={t.planning.phoneAllowed}
                                     checked={form.phoneAccess}
                                     onChange={toggle('phoneAccess')}
                                 />
@@ -279,13 +281,13 @@ export default function NewPlanDialog({
                     onClick={handleClose}
                     className="rounded-xl px-4 py-2.5 text-sm font-medium bg-red-400 text-white transition-colors hover:bg-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/40 cursor-pointer"
                 >
-                    Жокко чыгаруу
+                    {t.common.cancel}
                 </button>
                 <button
                     type="submit"
                     className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 cursor-pointer"
                 >
-                    Кошуу
+                    {t.common.add}
                 </button>
             </DialogActions>
         </Dialog>

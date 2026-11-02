@@ -32,6 +32,7 @@ import NewPlanDialog from './NewPlanDialog';
 import PlansMobileList from './PlansMobileList';
 import EditPlanDialog, { EditPlanForm } from '@/shared/ui/planning/Editplandialog';
 import Link from 'next/link';
+import { useLang } from '@/shared/i18n';
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -185,6 +186,7 @@ export default function PlansTable({ pagination, onPageChange, onPerPageChange }
         last_page: 6,
     }
 }) {
+    const { t } = useLang();
     const [plans, setPlans] = useState<Plan[]>(INITIAL_PLANS);
     const [query, setQuery] = useState('');
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -316,7 +318,7 @@ export default function PlansTable({ pagination, onPageChange, onPerPageChange }
             {/* Toolbar */}
             <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <h1 className="w-full text-lg font-semibold text-slate-900">
-                    Баары <span className="ml-1 text-sm font-normal text-slate-400">{total}</span>
+                    {t.common.all} <span className="ml-1 text-sm font-normal text-slate-400">{total}</span>
                 </h1>
 
                 <div className="flex items-start sm:items-center justify-end gap-2 flex-col sm:flex-row w-full">
@@ -328,7 +330,7 @@ export default function PlansTable({ pagination, onPageChange, onPerPageChange }
                         <input
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Поиск по ФИО"
+                            placeholder={t.planning.searchByName}
                             className="h-10 w-56 rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                         />
                     </label>
@@ -339,7 +341,7 @@ export default function PlansTable({ pagination, onPageChange, onPerPageChange }
                         className="inline-flex h-10 items-center w-full sm:max-w-[180px] justify-center gap-1 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 cursor-pointer"
                     >
                         <AddRoundedIcon fontSize="small" />
-                        Жаңы пландоо
+                        {t.planning.newPlan}
                     </button>
                 </div>
             </div>
@@ -354,12 +356,12 @@ export default function PlansTable({ pagination, onPageChange, onPerPageChange }
                     <TableHead>
                         <TableRow>
                             <TableCell className={headCell}>#</TableCell>
-                            <TableCell className={headCell}>Аталышы</TableCell>
-                            <TableCell className={headCell}>Тайпа</TableCell>
-                            <TableCell className={headCell} align="center">Тиби</TableCell>
-                            <TableCell className={headCell} align="center">Саны</TableCell>
-                            <TableCell className={headCell} align="center">Убактысы</TableCell>
-                            <TableCell className={headCell}>Күнү</TableCell>
+                            <TableCell className={headCell}>{t.planning.colTitle}</TableCell>
+                            <TableCell className={headCell}>{t.planning.colGroup}</TableCell>
+                            <TableCell className={headCell} align="center">{t.planning.colType}</TableCell>
+                            <TableCell className={headCell} align="center">{t.planning.colCount}</TableCell>
+                            <TableCell className={headCell} align="center">{t.planning.colDuration}</TableCell>
+                            <TableCell className={headCell}>{t.planning.colDate}</TableCell>
                             <TableCell className={headCell} align="right" />
                         </TableRow>
                     </TableHead>
@@ -421,10 +423,10 @@ export default function PlansTable({ pagination, onPageChange, onPerPageChange }
                                 {/* Действия */}
                                 <TableCell className={bodyCell} align="right">
                                     <div className="flex items-center justify-end gap-1">
-                                        <Tooltip title="Өзгөртүү">
+                                        <Tooltip title={t.common.change}>
                                             <IconButton
                                                 size="small"
-                                                aria-label="Өзгөртүү"
+                                                aria-label={t.common.change}
                                                 onClick={() => setEditingPlan(plan)}
                                                 className="!rounded-lg !text-emerald-600 hover:!bg-emerald-50"
                                             >
@@ -432,10 +434,10 @@ export default function PlansTable({ pagination, onPageChange, onPerPageChange }
                                             </IconButton>
                                         </Tooltip>
 
-                                        <Tooltip title="Ссылканы көчүрүү">
+                                        <Tooltip title={t.planning.copyLink}>
                                             <IconButton
                                                 size="small"
-                                                aria-label="Ссылканы көчүрүү"
+                                                aria-label={t.planning.copyLink}
                                                 onClick={() => handleCopyLink(plan)}
                                                 className="!rounded-lg !text-blue-600 hover:!bg-blue-50"
                                             >
@@ -443,11 +445,11 @@ export default function PlansTable({ pagination, onPageChange, onPerPageChange }
                                             </IconButton>
                                         </Tooltip>
 
-                                        <Tooltip title="Студенттер">
+                                        <Tooltip title={t.common.students}>
                                             <Link href={'/planning/streamConnect'}>
                                                 <IconButton
                                                     size="small"
-                                                    aria-label="Студенттер"
+                                                    aria-label={t.common.students}
                                                     // TODO: пока ничего не делает
                                                     className="!rounded-lg !text-indigo-600 hover:!bg-indigo-50"
                                                 >
@@ -456,10 +458,10 @@ export default function PlansTable({ pagination, onPageChange, onPerPageChange }
                                             </Link>
                                         </Tooltip>
 
-                                        <Tooltip title="Өчүрүү">
+                                        <Tooltip title={t.common.delete}>
                                             <IconButton
                                                 size="small"
-                                                aria-label="Өчүрүү"
+                                                aria-label={t.common.delete}
                                                 onClick={() => requestDelete(plan)}
                                                 className="!rounded-lg !text-rose-500 hover:!bg-rose-50"
                                             >
@@ -474,7 +476,7 @@ export default function PlansTable({ pagination, onPageChange, onPerPageChange }
                         {pagedPlans.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={8} align="center" className="!py-12 !text-slate-400">
-                                    Эч нерсе табылган жок
+                                    {t.common.nothingFound}
                                 </TableCell>
                             </TableRow>
                         )}
@@ -557,10 +559,10 @@ export default function PlansTable({ pagination, onPageChange, onPerPageChange }
                         </div>
                     </div>
 
-                    <h2 className="text-xl font-semibold text-slate-900">Пландоону өчүрүү</h2>
+                    <h2 className="text-xl font-semibold text-slate-900">{t.planning.deletePlanTitle}</h2>
                     <p className="mt-2 text-sm text-slate-500">
                         <span className='max-w-[250px] break-words text-blue-500'>«{deleteTarget?.title}»</span>
-                        (#{deleteTarget?.id}) өчүрүлөт. Бул аракетти кайтаруу мүмкүн эмес.
+                        {t.planning.deletePlanText(deleteTarget?.id ?? '')}
                     </p>
 
                     <div className="mt-8 flex justify-end gap-3">
@@ -569,14 +571,14 @@ export default function PlansTable({ pagination, onPageChange, onPerPageChange }
                             onClick={() => setDeleteOpen(false)}
                             className="h-12 cursor-pointer rounded-xl bg-slate-100 px-6 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200"
                         >
-                            Артка
+                            {t.common.back}
                         </button>
                         <button
                             type="button"
                             onClick={confirmDelete}
                             className="h-12 cursor-pointer rounded-xl bg-red-500 px-6 text-sm font-semibold text-white shadow-md shadow-red-500/30 transition-colors hover:bg-red-600"
                         >
-                            Өчүрүү
+                            {t.common.delete}
                         </button>
                     </div>
                 </div>

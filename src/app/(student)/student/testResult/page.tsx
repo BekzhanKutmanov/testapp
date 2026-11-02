@@ -3,6 +3,8 @@
 import { ProctorType } from '@/types/proctor/proctorType'
 import type { ReactNode } from 'react'
 import { useSelector } from 'react-redux'
+import { useLang } from '@/shared/i18n'
+import type { Dict } from '@/shared/i18n'
 
 /* ------------------------------------------------------------------ */
 /* Типы                                                                */
@@ -68,29 +70,24 @@ const formatFinishedAt = (value: Date | number | string | undefined): string => 
     return `${day}, ${time}`
 }
 
-const pluralize = (n: number, one: string, few: string, many: string): string => {
-    const mod10 = n % 10
-    const mod100 = n % 100
-    if (mod10 === 1 && mod100 !== 11) return one
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few
-    return many
-}
-
 const honestyColor = (index: number): string => {
     if (index >= 80) return '#16A34A'
     if (index >= 50) return '#D97706'
     return '#DC2626'
 }
 
-const VIOLATION_META: Record<string, { label: string; color: string }> = {
-    periodic: { label: 'Плановый снимок', color: '#64748B' },
-    'looking-away': { label: 'Отвернулся', color: '#D97706' },
-    'no-face': { label: 'Нет лица', color: '#C2410C' },
-    'multiple-faces': { label: 'Чужое лицо', color: '#DC2626' }
+const VIOLATION_META: Record<string, { label: keyof Dict['results']; color: string }> = {
+    periodic: { label: 'eventPeriodic', color: '#64748B' },
+    'looking-away': { label: 'eventLookingAway', color: '#D97706' },
+    'no-face': { label: 'eventNoFace', color: '#C2410C' },
+    'multiple-faces': { label: 'eventMultipleFaces', color: '#DC2626' }
 }
 
-const getViolationMeta = (type: string) =>
-    VIOLATION_META[type] ?? { label: type, color: '#64748B' }
+const getViolationMeta = (type: string, t: Dict) => {
+    const meta = VIOLATION_META[type]
+
+    return meta ? { label: t.results[meta.label] as string, color: meta.color } : { label: type, color: '#64748B' }
+}
 
 /* ------------------------------------------------------------------ */
 /* Мелкие компоненты                                                   */
@@ -150,6 +147,7 @@ const Chip = ({ label, count }: { label: string; count: number }) => (
 /* ------------------------------------------------------------------ */
 
 const ProctoringSection = () => {
+    const { t } = useLang()
     const proctorResult = useSelector((state) => state ? state.proctorResult.value : null);
     console.log(proctorResult);
 
@@ -164,7 +162,7 @@ const ProctoringSection = () => {
                         <div className='h-3 w-72 animate-pulse rounded bg-slate-200' />
                     </div>
                 </div>
-                <p className='mt-4 text-sm text-slate-500'>Отчёт прокторинга загружается…</p>
+                <p className='mt-4 text-sm text-slate-500'>{t.results.loading}</p>
             </section>
         )
     }
@@ -182,32 +180,32 @@ const ProctoringSection = () => {
                     <span className='text-base font-bold text-slate-900'>{stats.honestyIndex}</span>
                 </Ring>
                 <div>
-                    <h3 className='text-base font-semibold text-slate-900'>Честность прохождения</h3>
+                    <h3 className='text-base font-semibold text-slate-900'>{t.results.honesty}</h3>
                     <p className='mt-0.5 text-sm text-slate-500'>
                         {stats.totalViolations > 0
-                            ? `Отмечено ${stats.totalViolations} ${pluralize(stats.totalViolations, 'момент', 'момента', 'моментов')}. Это не влияет на баллы за тест.`
-                            : 'Нарушений не зафиксировано.'}
+                            ? t.results.violations(stats.totalViolations)
+                            : t.results.noViolations}
                     </p>
                 </div>
             </div>
 
             {/* Счётчики */}
             <div className='mt-5 flex flex-wrap gap-2'>
-                <Chip label='Отворачивался' count={stats.lookingAwayCount} />
-                <Chip label='Пропадал из кадра' count={stats.noFaceCount} />
-                <Chip label='Посторонние в кадре' count={stats.multipleFacesCount} />
+                <Chip label={t.results.lookedAway} count={stats.lookingAwayCount} />
+                <Chip label={t.results.leftFrame} count={stats.noFaceCount} />
+                <Chip label={t.results.strangers} count={stats.multipleFacesCount} />
             </div>
 
             {/* Галерея — видна всегда */}
             <div className='mt-6'>
                 <div className='mb-3 text-sm font-medium text-slate-700'>
-                    Снимки <span className='text-slate-400'>({gallery.length})</span>
+                    {t.results.shots} <span className='text-slate-400'>({gallery.length})</span>
                 </div>
 
                 {gallery.length > 0 ? (
                     <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4'>
                         {gallery.map((item, i) => {
-                            const meta = getViolationMeta(item.type)
+                            const meta = getViolationMeta(item.type, t)
                             return (
                                 <figure
                                     key={`${item.timestamp}-${i}`}
@@ -231,7 +229,7 @@ const ProctoringSection = () => {
                     </div>
                 ) : (
                     <div className='rounded-xl border border-dashed border-slate-300 py-8 text-center text-sm text-slate-500'>
-                        Снимков нет
+                        {t.results.noShots}
                     </div>
                 )}
             </div>
@@ -252,6 +250,7 @@ export const TestResult = ({
     onViewAnswers,
     onClose
 }: TestResultProps) => {
+    const { t } = useLang()
     const total = stats.correct + stats.incorrect + stats.skipped
     const pct = (n: number) => (total > 0 ? (n / total) * 100 : 0)
 
@@ -259,10 +258,10 @@ export const TestResult = ({
         <div className='mx-auto w-full max-w-3xl rounded-3xl bg-white p-8 shadow-xl shadow-slate-200/60'>
             {/* Заголовок */}
             <header>
-                <span className='text-xs font-semibold uppercase tracking-wider text-indigo-600'>Результаты теста</span>
+                <span className='text-xs font-semibold uppercase tracking-wider text-indigo-600'>{t.results.title}</span>
                 <h1 className='mt-2 text-3xl font-extrabold text-slate-900'>{testTitle}</h1>
                 <p className='mt-3 text-sm text-slate-500'>
-                    Группа {groupName} · завершён {formatFinishedAt(finishedAt)}
+                    {t.results.groupFinished(groupName, formatFinishedAt(finishedAt))}
                 </p>
             </header>
 
@@ -277,14 +276,14 @@ export const TestResult = ({
                     trackColor='#E0E7FF'
                 >
                     <span className='text-5xl font-extrabold leading-none text-slate-900'>{stats.score}</span>
-                    <span className='mt-1 text-xs text-slate-500'>из {stats.maxScore} баллов</span>
+                    <span className='mt-1 text-xs text-slate-500'>{t.results.outOf(stats.maxScore)}</span>
                 </Ring>
 
                 <div className='w-full flex-1'>
                     <div className='flex gap-3 flex-wrap'>
-                        <StatCard value={stats.correct} label='Правильно' className='bg-emerald-50 text-emerald-700' />
-                        <StatCard value={stats.incorrect} label='Неправильно' className='bg-rose-50 text-rose-700' />
-                        <StatCard value={stats.skipped} label='Пропущено' className='bg-slate-100 text-slate-600' />
+                        <StatCard value={stats.correct} label={t.results.correct} className='bg-emerald-50 text-emerald-700' />
+                        <StatCard value={stats.incorrect} label={t.results.incorrect} className='bg-rose-50 text-rose-700' />
+                        <StatCard value={stats.skipped} label={t.results.skipped} className='bg-slate-100 text-slate-600' />
                     </div>
 
                     <div className='mt-4 flex h-2 overflow-hidden rounded-full bg-slate-200'>
@@ -293,8 +292,7 @@ export const TestResult = ({
                     </div>
 
                     <p className='mt-3 text-sm text-slate-500'>
-                        Верно отвечено на {stats.correct} из {total}{' '}
-                        {pluralize(total, 'вопроса', 'вопросов', 'вопросов')}
+                        {t.results.correctOf(stats.correct, total)}
                     </p>
                 </div>
             </div>
@@ -306,14 +304,14 @@ export const TestResult = ({
                     onClick={onViewAnswers}
                     className='rounded-xl bg-indigo-600 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
                 >
-                    Посмотреть ответы
+                    {t.results.viewAnswers}
                 </button>
                 <button
                     type='button'
                     onClick={onClose}
                     className='rounded-xl border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400'
                 >
-                    Закрыть
+                    {t.common.close}
                 </button>
             </div>
 

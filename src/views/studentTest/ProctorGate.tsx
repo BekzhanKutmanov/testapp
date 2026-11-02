@@ -6,6 +6,8 @@ import VideocamOffRoundedIcon from '@mui/icons-material/VideocamOffRounded';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 
 import type { ProctorState, ProctorStep } from '@/features/components/Face';
+import { useLang } from '@/shared/i18n';
+import type { Dict } from '@/shared/i18n';
 
 interface ProctorGateProps {
   state: ProctorState;
@@ -13,10 +15,12 @@ interface ProctorGateProps {
   onContinueWithout: () => void;
 }
 
-const STEPS: { key: ProctorStep; label: string; hint?: string }[] = [
-  { key: 'models', label: 'Загрузка модулей распознавания' },
-  { key: 'camera', label: 'Доступ к камере', hint: 'Разрешите доступ в окне браузера' },
-  { key: 'warmup', label: 'Проверка распознавания лица' },
+type ProctorText = keyof Dict['proctor'];
+
+const STEPS: { key: ProctorStep; label: ProctorText; hint?: ProctorText }[] = [
+  { key: 'models', label: 'stepModels' },
+  { key: 'camera', label: 'stepCamera', hint: 'stepCameraHint' },
+  { key: 'warmup', label: 'stepWarmup' },
 ];
 
 /**
@@ -38,6 +42,7 @@ export default function ProctorGate({ state, onRetry, onContinueWithout }: Proct
 }
 
 function LoadingView({ done }: { done: ProctorStep[] }) {
+  const { t } = useLang();
   // «Проверка» начинается только когда готовы и модели, и камера
   const isActive = (key: ProctorStep) =>
     !done.includes(key) && (key !== 'warmup' || (done.includes('models') && done.includes('camera')));
@@ -45,9 +50,9 @@ function LoadingView({ done }: { done: ProctorStep[] }) {
   return (
     <div className="flex flex-col items-center text-center">
       <CircularProgress size={44} thickness={4} />
-      <h2 className="m-0 mt-5 text-lg font-semibold text-slate-900">Подготовка к тесту</h2>
+      <h2 className="m-0 mt-5 text-lg font-semibold text-slate-900">{t.proctor.prepTitle}</h2>
       <p className="m-0 mt-1 text-sm text-slate-500">
-        Включаем прокторинг. Время теста пойдёт только после готовности.
+        {t.proctor.prepText}
       </p>
 
       <ul className="m-0 mt-6 flex w-full list-none flex-col gap-3 p-0 text-left">
@@ -68,9 +73,9 @@ function LoadingView({ done }: { done: ProctorStep[] }) {
               </span>
               <span className="min-w-0">
                 <span className={`block text-sm ${isDone ? 'text-slate-500' : active ? 'font-medium text-slate-900' : 'text-slate-400'}`}>
-                  {step.label}
+                  {t.proctor[step.label]}
                 </span>
-                {active && step.hint && <span className="block text-xs text-slate-500">{step.hint}</span>}
+                {active && step.hint && <span className="block text-xs text-slate-500">{t.proctor[step.hint]}</span>}
               </span>
             </li>
           );
@@ -78,7 +83,7 @@ function LoadingView({ done }: { done: ProctorStep[] }) {
       </ul>
 
       <p className="m-0 mt-6 text-xs text-slate-400">
-        При медленном интернете это может занять до минуты. Не закрывайте страницу.
+        {t.proctor.slowNet}
       </p>
     </div>
   );
@@ -95,17 +100,18 @@ function ErrorView({
   onRetry: () => void;
   onContinueWithout: () => void;
 }) {
+  const { t } = useLang();
   return (
     <div className="flex flex-col items-center text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50">
         <VideocamOffRoundedIcon className="!text-red-500" />
       </div>
-      <h2 className="m-0 mt-4 text-lg font-semibold text-slate-900">Не удалось запустить прокторинг</h2>
+      <h2 className="m-0 mt-4 text-lg font-semibold text-slate-900">{t.proctor.failTitle}</h2>
       <p className="m-0 mt-2 text-sm text-slate-600">{message}</p>
 
       {code === 'camera-denied' && (
         <p className="m-0 mt-3 rounded-xl bg-slate-50 px-4 py-3 text-left text-xs text-slate-500">
-          Нажмите на значок замка 🔒 слева от адреса сайта → «Камера» → «Разрешить», затем нажмите «Попробовать снова».
+          {t.proctor.lockHint}
         </p>
       )}
 
@@ -117,13 +123,13 @@ function ErrorView({
           onClick={onRetry}
           sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 600, py: 1.1 }}
         >
-          Попробовать снова
+          {t.proctor.retry}
         </Button>
         <Button
           onClick={onContinueWithout}
           sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 500, color: 'text.secondary' }}
         >
-          Начать тест без прокторинга
+          {t.proctor.startWithout}
         </Button>
       </div>
     </div>

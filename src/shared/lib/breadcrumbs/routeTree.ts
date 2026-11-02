@@ -1,5 +1,8 @@
+import type { Dict } from '@/shared/i18n/lang';
+
 export interface RouteNode {
-  label?: string;
+  // ключ из словаря t.breadcrumbs
+  label?: keyof Dict['breadcrumbs'];
   // literal-дети: конкретное имя сегмента
   children?: Record<string, RouteNode>;
   // если сегмент на этом уровне — параметр (id/slug/что угодно)
@@ -9,13 +12,13 @@ export interface RouteNode {
 export const routeTree: RouteNode = {
   children: {
     teacher: {
-      label: 'Все предметы',
+      label: 'allSubjects',
       param: {
-        label: 'Предмет',
+        label: 'subject',
         children: {
           createTest: {
             // label: 'Create',
-            param: { label: 'Создать' },
+            param: { label: 'create' },
           },
         },
       },

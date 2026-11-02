@@ -43,6 +43,7 @@ import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNav
 import menuItemStyles from '@core/styles/vertical/menuItemStyles'
 import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
 import NavigationSubjects from '@/features/components/NavigationSubjects'
+import { useLang } from '@/shared/i18n'
 
 type RenderExpandIconProps = {
   open?: boolean
@@ -58,6 +59,7 @@ const RenderExpandIcon = ({ open, transitionDuration }: RenderExpandIconProps) =
 const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectScrollbar: boolean) => void }) => {
   // Hooks
   const theme = useTheme()
+  const { t } = useLang()
   const { isBreakpointReached, transitionDuration } = useVerticalNav()
 
   const dispatch = useDispatch()
@@ -219,15 +221,15 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           className={'mt-2'}
         >
           <MenuItem href='/card-basic' icon={<i className='ri-home-smile-line' />}>
-            Панель управления
+            {t.menu.dashboard}
           </MenuItem>
           <MenuItem href='/planning' icon={<i className='ri-bar-chart-box-line' />}>
-            Планирование
+            {t.menu.planning}
           </MenuItem>
           {/*</MenuSection>*/}
 
           <SubMenu
-            label='Предметы'
+            label={t.common.subjects}
             icon={<i className='ri-home-smile-line' />}
             // suffix={<Chip label='5' size='small' color='error' />}
           >
@@ -247,12 +249,12 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
                 }}
               />
             ) : (
-              <div className={'text-red-500 px-3 my-4 w-full flex justify-center'}>Повторите позже</div>
+              <div className={'text-red-500 px-3 my-4 w-full flex justify-center'}>{t.common.tryLater}</div>
             )}
 
             <div className={'flex items-center justify-center mt-4 mb-2'}>
               <Button variant='contained' size={'small'} startIcon={<AddIcon />} onClick={handleOpen}>
-                Новый предмет
+                {t.menu.newSubject}
               </Button>
             </div>
 
@@ -262,12 +264,12 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
 
       {/*// new subject*/}
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth='xs'>
-        <DialogTitle>Новый предмет</DialogTitle>
+        <DialogTitle>{t.menu.newSubject}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin='dense'
-            label='Название'
+            label={t.common.title}
             type='text'
             fullWidth
             variant='outlined'
@@ -276,21 +278,21 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Назад</Button>
+          <Button onClick={handleClose}>{t.common.back}</Button>
           <Button onClick={handleSave} variant='contained' color='primary'>
-            Сохранить
+            {t.common.save}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/*// update subject*/}
       <Dialog open={updateOpen} onClose={handleUpdateClose} fullWidth maxWidth='xs'>
-        <DialogTitle>Обновить предмет</DialogTitle>
+        <DialogTitle>{t.menu.updateSubject}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin='dense'
-            label='Название'
+            label={t.common.title}
             type='text'
             fullWidth
             variant='outlined'
@@ -299,19 +301,19 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleUpdateClose}>Назад</Button>
+          <Button onClick={handleUpdateClose}>{t.common.back}</Button>
           <Button onClick={handleUpdate} variant='contained' color='primary'>
-            Обновить
+            {t.common.update}
           </Button>
         </DialogActions>
       </Dialog>
 
     <Dialog open={confirmOpen} onClose={onConfirmClose}>
-      <DialogTitle>Вы точно хотите удалить?</DialogTitle>
+      <DialogTitle>{t.menu.confirmDelete}</DialogTitle>
 
       <DialogActions>
         <Button onClick={onConfirmClose}>
-          Отмена
+          {t.common.cancel}
         </Button>
 
         <Button
@@ -321,7 +323,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
             onConfirm();
           }}
         >
-          Удалить
+          {t.common.delete}
         </Button>
       </DialogActions>
     </Dialog>
