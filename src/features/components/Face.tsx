@@ -9,6 +9,96 @@ import { startTabTracking } from '@/features/utils_/startTabTracking'
 import { ProctorType } from '@/types/proctor/proctorType'
 import { useDispatch } from 'react-redux'
 import { addProctorResult } from '@/shared/slices/proctorResultSlice'
+import { createProctorMetrics, isProctorDebugEnabled, type ProctorMetricsSnapshot } from './proctorMetrics'
+
+/* ---------------------------- Состояние запуска ---------------------------- */
+
+export type ProctorStep = 'models' | 'camera' | 'warmup'
+
+export type ProctorErrorCode =
+  | 'unsupported' // нет доступа к камере в этом браузере / сайт не по HTTPS
+  | 'camera-denied' // студент запретил доступ к камере
+  | 'camera-not-found' // камеры нет
+  | 'camera-busy' // камера занята другой программой
+  | 'camera-lost' // камера отключилась во время теста
+  | 'models-failed' // не удалось скачать модели (сеть)
+  | 'too-slow' // устройство не справляется с распознаванием
+  | 'unknown'
+
+export interface ProctorError {
+  code: ProctorErrorCode
+  message: string
+}
+
+export type ProctorState =
+  | { status: 'loading'; done: ProctorStep[] }
+  | { status: 'ready' }
+  | { status: 'error'; error: ProctorError }
+
+/* -------------------------------- Настройки -------------------------------- */
+
+const MODELS_URL = '/models'
+// Размер входа TinyFaceDetector (кратно 32): меньше — быстрее, больше — лучше видит мелкие/дальние лица
+// (важно для multiple-faces: второй человек на заднем плане в кадре мелкий).
+// По умолчанию — полный размер; облегчённый — только если устройство медленное (см. калибровку в warmUp).
+const DETECTOR_INPUT_SIZE = 320
+const DETECTOR_INPUT_SIZE_LITE = 224
+// Медиана калибровочных детекций выше этого порога — переходим на облегчённый размер
+const SLOW_DETECTION_MS = 150
+const CALIBRATION_RUNS = 3
+const DETECTOR_SCORE_THRESHOLD = 0.5
+// Целевой интервал детекции. На слабом устройстве интервал увеличивается автоматически
+const DETECTION_INTERVAL_MS = 1000
+const MODELS_TIMEOUT_MS = 90_000 // на медленном интернете
+const WARMUP_TIMEOUT_MS = 45_000 // первый запуск нейросети (компиляция WebGL-шейдеров)
+const MODEL_LOAD_ATTEMPTS = 2
+
+const detectorOptions = (inputSize: number) =>
+  new faceapi.TinyFaceDetectorOptions({ inputSize, scoreThreshold: DETECTOR_SCORE_THRESHOLD })
+
+class ProctorInitError extends Error {
+  constructor(public code: ProctorErrorCode, message: string) {
+    super(message)
+  }
+}
+
+const withTimeout = <T,>(promise: Promise<T>, ms: number, error: ProctorInitError) =>
+  new Promise<T>((resolve, reject) => {
+    const id = setTimeout(() => reject(error), ms)
+    promise.then(
+      v => {
+        clearTimeout(id)
+        resolve(v)
+      },
+      e => {
+        clearTimeout(id)
+        reject(e)
+      }
+    )
+  })
+
+const wait = (ms: number) => new Promise(r => setTimeout(r, ms))
+
+// Даём браузеру отрисовать интерфейс перед тяжёлой синхронной работой
+const nextFrame = () => new Promise<void>(r => requestAnimationFrame(() => setTimeout(r, 0)))
+
+const toCameraError = (err: unknown): ProctorInitError => {
+  const name = (err as { name?: string })?.name
+
+  switch (name) {
+    case 'NotAllowedError':
+    case 'SecurityError':
+      return new ProctorInitError('camera-denied', 'Доступ к камере запрещён. Разрешите его в настройках браузера.')
+    case 'NotFoundError':
+    case 'OverconstrainedError':
+      return new ProctorInitError('camera-not-found', 'Камера не найдена. Подключите камеру.')
+    case 'NotReadableError':
+    case 'AbortError':
+      return new ProctorInitError('camera-busy', 'Камера занята другой программой (Zoom, Teams и т.п.). Закройте её.')
+    default:
+      return new ProctorInitError('unknown', 'Не удалось включить камеру.')
+  }
+}
 
 interface ProctorCameraProps {
   onFacesDetected: (count: number) => void
@@ -18,6 +108,8 @@ interface ProctorCameraProps {
   matchResult: string
   isLookingAway: boolean,
   resultSend: boolean
+  /** Этапы запуска: загрузка → готов / ошибка. Необязательный. */
+  onStateChange?: (state: ProctorState) => void
 }
 
 export const ProctorCamera = memo(function ProctorCamera({
@@ -27,10 +119,19 @@ export const ProctorCamera = memo(function ProctorCamera({
   facesDetected,
   matchResult,
   isLookingAway,
-  resultSend
+  resultSend,
+  onStateChange
 }: ProctorCameraProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null) // цикл детекции (setTimeout-цепочка)
+  const stoppedRef = useRef(false)
+  const onStateChangeRef = useRef(onStateChange)
+  onStateChangeRef.current = onStateChange
+
+  // Диагностика (только с ?proctorDebug=1, иначе пустышка) — на логику не влияет
+  const [debug] = useState(isProctorDebugEnabled)
+  const metricsRef = useRef(createProctorMetrics(debug))
+  const [metricsSnapshot, setMetricsSnapshot] = useState<ProctorMetricsSnapshot | null>(null)
   const violationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const noFaceCriticalTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const noFaceCriticalShownRef = useRef(false)
@@ -47,6 +148,7 @@ export const ProctorCamera = memo(function ProctorCamera({
 
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [failed, setFailed] = useState(false)
 
   const PENALTY_PER_VIOLATION = 5
 
@@ -152,7 +254,8 @@ export const ProctorCamera = memo(function ProctorCamera({
   }
 
   const stopCameraProctoring = () => {
-    if (intervalRef.current) clearInterval(intervalRef.current)
+    stoppedRef.current = true
+    if (intervalRef.current) clearTimeout(intervalRef.current)
     if (periodicIntervalRef.current) clearInterval(periodicIntervalRef.current)
     clearPendingViolation()
     clearNoFaceCriticalViolation()
@@ -207,115 +310,298 @@ export const ProctorCamera = memo(function ProctorCamera({
     if (!video) return
 
     let cancelled = false
+    stoppedRef.current = false
+    // Выбирается один раз при калибровке и до конца теста не меняется
+    let detectorInputSize = DETECTOR_INPUT_SIZE
+
+    const done: ProctorStep[] = []
+    const emit = (state: ProctorState) => {
+      if (!cancelled) onStateChangeRef.current?.(state)
+    }
+    const markDone = (step: ProctorStep, durationMs?: number) => {
+      if (!cancelled) metricsRef.current.step(step, durationMs)
+      done.push(step)
+      emit({ status: 'loading', done: [...done] })
+    }
+
+    // 1. Модели (с повтором и таймаутом — на случай плохой сети)
+    const loadModels = async () => {
+      for (let attempt = 1; attempt <= MODEL_LOAD_ATTEMPTS; attempt++) {
+        try {
+          await withTimeout(
+            Promise.all([
+              faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_URL),
+              faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL)
+              // faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_URL)
+            ]),
+            MODELS_TIMEOUT_MS,
+            new ProctorInitError('models-failed', 'Модули прокторинга загружаются слишком долго. Проверьте интернет.')
+          )
+
+          markDone('models')
+
+          return
+        } catch (err) {
+          if (cancelled) return
+          if (attempt === MODEL_LOAD_ATTEMPTS) {
+            throw err instanceof ProctorInitError
+              ? err
+              : new ProctorInitError('models-failed', 'Не удалось загрузить модули прокторинга. Проверьте интернет.')
+          }
+          await wait(1500)
+        }
+      }
+    }
+
+    // 2. Камера (камера «занята» часто освобождается через секунду — пробуем ещё раз)
+    const startCamera = async () => {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new ProctorInitError('unsupported', 'Браузер не даёт доступ к камере. Откройте тест в Chrome/Edge/Firefox по HTTPS.')
+      }
+
+      const constraints: MediaStreamConstraints = {
+        // Небольшое разрешение — меньше нагрузка на распознавание и снимки
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+      }
+
+      let stream: MediaStream
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints)
+      } catch (err) {
+        const error = toCameraError(err)
+        if (error.code !== 'camera-busy' || cancelled) throw error
+        await wait(1000)
+        try {
+          stream = await navigator.mediaDevices.getUserMedia(constraints)
+        } catch (retryErr) {
+          throw toCameraError(retryErr)
+        }
+      }
+
+      if (cancelled) {
+        stream.getTracks().forEach(t => t.stop())
+
+        return
+      }
+
+      streamRef.current = stream
+      video.srcObject = stream
+
+      // Ждём пока видео реально готово
+      await new Promise<void>(resolve => {
+        const onReady = () => {
+          video.removeEventListener('canplay', onReady)
+          resolve()
+        }
+        if (video.readyState >= 3) {
+          resolve()
+
+          return
+        }
+        video.addEventListener('canplay', onReady)
+      })
+
+      await video.play()
+
+      // Камеру отключили / забрали во время теста
+      stream.getVideoTracks()[0]?.addEventListener('ended', () => {
+        if (stoppedRef.current) return
+        stopCameraProctoring()
+        setFailed(true)
+        emit({ status: 'error', error: { code: 'camera-lost', message: 'Камера отключилась во время теста.' } })
+      })
+
+      metricsRef.current.setVideoTrack(stream.getVideoTracks()[0])
+      markDone('camera')
+    }
+
+    // 3. «Прогрев»: первый запуск нейросети компилирует WebGL-шейдеры и подвешивает вкладку.
+    //    Делаем это под экраном загрузки, а не во время ответов студента.
+    const warmUp = async () => {
+      await nextFrame()
+      const warmupStartedAt = performance.now()
+      await withTimeout(
+        (async () => {
+          await faceapi.detectAllFaces(video, detectorOptions(detectorInputSize)).withFaceLandmarks().run()
+          // Сеть ключевых точек запускается только если найдено лицо. Если в момент прогрева
+          // лица в кадре не было — прогреваем её отдельно, иначе её шейдеры скомпилируются
+          // уже во время теста (это давало зависание ~2 с на первой реальной детекции).
+          await faceapi.detectFaceLandmarks(video)
+        })(),
+        WARMUP_TIMEOUT_MS,
+        new ProctorInitError('too-slow', 'Устройство слишком медленно обрабатывает видео.')
+      )
+      const warmupMs = performance.now() - warmupStartedAt
+
+      await withTimeout(
+        calibrate(),
+        WARMUP_TIMEOUT_MS,
+        new ProctorInitError('too-slow', 'Устройство слишком медленно обрабатывает видео.')
+      )
+      markDone('warmup', warmupMs)
+    }
+
+    // Калибровка: замеряем уже прогретую детекцию и на медленном устройстве берём облегчённый размер.
+    // Решаем здесь, под экраном загрузки: шейдеры WebGL (tfjs 1.x) компилируются под конкретный размер,
+    // и смена размера во время теста дала бы такое же зависание, как прогрев.
+    const calibrate = async () => {
+      const samples: number[] = []
+      for (let i = 0; i < CALIBRATION_RUNS; i++) {
+        await nextFrame()
+        const startedAt = performance.now()
+        await faceapi.detectAllFaces(video, detectorOptions(detectorInputSize)).withFaceLandmarks().run()
+        samples.push(performance.now() - startedAt)
+      }
+      // Медиана — одиночный выброс (GC, сворачивание) не влияет на решение
+      const medianMs = samples.sort((a, b) => a - b)[Math.floor(samples.length / 2)]
+
+      if (medianMs > SLOW_DETECTION_MS) {
+        detectorInputSize = DETECTOR_INPUT_SIZE_LITE
+        // Прогреваем облегчённый размер (сеть ключевых точек от него не зависит — уже прогрета)
+        await faceapi.detectAllFaces(video, detectorOptions(detectorInputSize)).run()
+      }
+
+      metricsRef.current.detector(detectorInputSize, medianMs)
+    }
+
+    // Цикл детекции: следующий запуск — только после окончания предыдущего (без наложения).
+    // Если устройство медленное, пауза между запусками не меньше времени самой детекции,
+    // чтобы у интерфейса оставалось время на отклик.
+    const scheduleDetection = (delay: number) => {
+      if (stoppedRef.current) return
+      intervalRef.current = setTimeout(runDetection, delay)
+    }
+
+    const runDetection = async () => {
+      if (stoppedRef.current) return
+
+      // Вкладка скрыта — не тратим ресурсы
+      if (document.hidden || video.readyState < 2 || video.videoWidth === 0) {
+        metricsRef.current.skipped()
+        scheduleDetection(DETECTION_INTERVAL_MS)
+
+        return
+      }
+
+      const startedAt = performance.now()
+
+      try {
+        await detectOnce()
+      } catch (_) {
+        // игнорируем единичные ошибки детекции
+      }
+
+      const elapsed = performance.now() - startedAt
+      metricsRef.current.detection(startedAt, elapsed)
+      scheduleDetection(Math.max(DETECTION_INTERVAL_MS - elapsed, elapsed))
+    }
+
+    const detectOnce = async () => {
+      if (stoppedRef.current) return
+
+      const allDetections = await faceapi.detectAllFaces(video, detectorOptions(detectorInputSize)).withFaceLandmarks()
+      if (stoppedRef.current) return
+      // .withFaceDescriptors()
+
+      if (!allDetections || allDetections.length === 0) {
+        scheduleNoFaceCriticalViolation()
+        scheduleViolation('no-face', () => {
+          onFacesDetected(0)
+          onMatchResult('Лицо не найдено')
+          onLookingAway(false)
+          maybeCaptureViolation('no-face')
+        })
+        return
+      }
+
+      clearNoFaceCriticalViolation()
+      // clearViolationCapture()
+      onFacesDetected(allDetections.length)
+
+      if (allDetections.length > 1) {
+        clearPendingViolation()
+        onLookingAway(false)
+        maybeCaptureViolation('multiple-faces')
+        return
+      }
+
+      // clearViolationCapture()
+
+      const detection = allDetections[0]
+      const positions = detection.landmarks.positions
+
+      const leftCheek = positions[0]
+      const rightCheek = positions[16]
+      const noseTip = positions[30]
+
+      const distanceToLeft = Math.abs(noseTip.x - leftCheek.x)
+      const distanceToRight = Math.abs(rightCheek.x - noseTip.x)
+      const ratio = distanceToLeft / distanceToRight
+
+      if (ratio < 0.5 || ratio > 2.0) {
+        scheduleViolation('looking-away', () => {
+          onLookingAway(true)
+          maybeCaptureViolation('looking-away')
+        })
+      } else {
+        clearPendingViolation()
+        onLookingAway(false)
+        clearViolationCapture()
+      }
+
+      // const currentDescriptor = descriptorRef.current
+      // if (currentDescriptor && detection.descriptor) {
+      //   const faceMatcher = new faceapi.FaceMatcher(
+      //     new faceapi.LabeledFaceDescriptors('UploadedFace', [new Float32Array(currentDescriptor)]),
+      //     0.6
+      //   )
+      //   const bestMatch = faceMatcher.findBestMatch(detection.descriptor)
+      //   onMatchResult(bestMatch.label === 'unknown' ? 'Не совпадает' : 'Совпадает')
+      // } else {
+      //   onMatchResult('Ожидание фото...')
+      // }
+    }
 
     const init = async () => {
       try {
-        await faceapi.nets.ssdMobilenetv1.loadFromUri('/models')
-        await faceapi.nets.faceLandmark68Net.loadFromUri('/models')
-        // await faceapi.nets.faceRecognitionNet.loadFromUri('/models')
+        metricsRef.current.start()
+        emit({ status: 'loading', done: [] })
 
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-        streamRef.current = stream
+        // Модели и камера — параллельно: пока качаются модели, студент отвечает на запрос доступа
+        await Promise.all([loadModels(), startCamera()])
+        if (cancelled) return
 
-        if (cancelled) {
-          // ← добавляем проверку
-          stream.getTracks().forEach(t => t.stop())
-          return
-        }
+        await warmUp()
+        if (cancelled) return
 
-        video.srcObject = stream
-
-        // Ждём пока видео реально готово
-        await new Promise<void>(resolve => {
-          const onReady = () => {
-            video.removeEventListener('canplay', onReady)
-            resolve()
-          }
-          if (video.readyState >= 3) {
-            resolve()
-            return
-          }
-          video.addEventListener('canplay', onReady)
-        })
-
-        await video.play()
         setLoading(false)
+        metricsRef.current.step('ready')
+        emit({ status: 'ready' })
 
         // Запускаем детекцию — она работает ВСЕГДА независимо от панели
-        intervalRef.current = setInterval(async () => {
-          if (video.readyState < 2 || video.videoWidth === 0) return
-
-          try {
-            const allDetections = await faceapi.detectAllFaces(video).withFaceLandmarks()
-            // .withFaceDescriptors()
-
-            if (!allDetections || allDetections.length === 0) {
-              scheduleNoFaceCriticalViolation()
-              scheduleViolation('no-face', () => {
-                onFacesDetected(0)
-                onMatchResult('Лицо не найдено')
-                onLookingAway(false)
-                maybeCaptureViolation('no-face')
-              })
-              return
-            }
-
-            clearNoFaceCriticalViolation()
-            // clearViolationCapture()
-            onFacesDetected(allDetections.length)
-
-            if (allDetections.length > 1) {
-              clearPendingViolation()
-              onLookingAway(false)
-              maybeCaptureViolation('multiple-faces')
-              return
-            }
-
-            // clearViolationCapture()
-
-            const detection = allDetections[0]
-            const positions = detection.landmarks.positions
-
-            const leftCheek = positions[0]
-            const rightCheek = positions[16]
-            const noseTip = positions[30]
-
-            const distanceToLeft = Math.abs(noseTip.x - leftCheek.x)
-            const distanceToRight = Math.abs(rightCheek.x - noseTip.x)
-            const ratio = distanceToLeft / distanceToRight
-
-            if (ratio < 0.5 || ratio > 2.0) {
-              scheduleViolation('looking-away', () => {
-                onLookingAway(true)
-                maybeCaptureViolation('looking-away')
-              })
-            } else {
-              clearPendingViolation()
-              onLookingAway(false)
-              clearViolationCapture()
-            }
-
-            // const currentDescriptor = descriptorRef.current
-            // if (currentDescriptor && detection.descriptor) {
-            //   const faceMatcher = new faceapi.FaceMatcher(
-            //     new faceapi.LabeledFaceDescriptors('UploadedFace', [new Float32Array(currentDescriptor)]),
-            //     0.6
-            //   )
-            //   const bestMatch = faceMatcher.findBestMatch(detection.descriptor)
-            //   onMatchResult(bestMatch.label === 'unknown' ? 'Не совпадает' : 'Совпадает')
-            // } else {
-            //   onMatchResult('Ожидание фото...')
-            // }
-          } catch (_) {
-            // игнорируем единичные ошибки детекции
-          }
-        }, 1000)
+        scheduleDetection(DETECTION_INTERVAL_MS)
 
         periodicIntervalRef.current = setInterval(() => {
           captureScreenshot('periodic')
         }, 60000)
       } catch (err) {
-        console.error('Ошибка инициализации:', err)
+        if (cancelled) return
+        console.error('Ошибка инициализации прокторинга:', err)
+
+        // Освобождаем камеру, если она успела включиться
+        stopCameraProctoring()
+        setFailed(true)
+
+        const error: ProctorError =
+          err instanceof ProctorInitError
+            ? { code: err.code, message: err.message }
+            : { code: 'unknown', message: 'Не удалось запустить прокторинг.' }
+
+        metricsRef.current.error(error.code)
+        emit({ status: 'error', error })
+
+        // Останавливаем «хвосты»: если камера разрешится уже после ошибки моделей — она сразу выключится
+        cancelled = true
       }
     }
 
@@ -330,8 +616,16 @@ export const ProctorCamera = memo(function ProctorCamera({
       // s?.getTracks().forEach(t => t.stop())
       cancelled = true
       stopCameraProctoring()
+      metricsRef.current.stop()
     }
   }, []) // [] — только при монтировании, больше никогда
+
+  // Панель диагностики обновляется только в режиме отладки
+  useEffect(() => {
+    if (!debug) return
+
+    return metricsRef.current.subscribe(setMetricsSnapshot)
+  }, [debug])
 
   // Защита навигации
   useEffect(() => {
@@ -377,10 +671,10 @@ export const ProctorCamera = memo(function ProctorCamera({
   }, [reportData]);
 
   const statusColor = isLookingAway ? '#EF4444' : facesDetected === 0 ? '#F59E0B' : '#12b84f'
-  const triggerColor = loading ? '#475569' : statusColor
+  const triggerColor = failed ? '#64748B' : loading ? '#475569' : statusColor
   const triggerFg = triggerColor === '#F59E0B' ? '#2B1B00' : '#FFFFFF'
   const statusText = isLookingAway ? 'Отвернулся' : facesDetected === 0 ? 'Нет лица' : 'Наблюдение активно'
-  const triggerText = loading ? 'Инициализация камеры...' : statusText
+  const triggerText = failed ? 'Прокторинг недоступен' : loading ? 'Инициализация камеры...' : statusText
 
   return (
     <>
@@ -521,6 +815,33 @@ export const ProctorCamera = memo(function ProctorCamera({
           .proctor-video-wrap { aspect-ratio: 16/9; }
         }
       `}</style>
+
+      {/* Панель диагностики (?proctorDebug=1) — для проверки на телефонах без консоли */}
+      {debug && metricsSnapshot && (
+        <pre
+          style={{
+            position: 'fixed', top: 8, right: 8, zIndex: 2000, margin: 0, padding: '6px 8px', maxWidth: 260,
+            background: 'rgba(15,23,42,0.85)', color: '#E2E8F0', borderRadius: 8, pointerEvents: 'none',
+            font: '10px/1.45 ui-monospace, Menlo, Consolas, monospace', whiteSpace: 'pre-wrap'
+          }}
+        >
+          {[
+            `backend: ${metricsSnapshot.backend}   video: ${metricsSnapshot.video}`,
+            `cpu: ${metricsSnapshot.device.cores ?? '?'} ядер   ram: ${metricsSnapshot.device.memoryGb ?? '?'} ГБ`,
+            `запуск: модели ${metricsSnapshot.startup.models ?? '…'} · камера ${metricsSnapshot.startup.camera ?? '…'} · готов ${metricsSnapshot.startup.ready ?? '…'} мс`,
+            `прогрев: ${metricsSnapshot.warmupMs ?? '…'} мс`,
+            `детектор: ${metricsSnapshot.detector.inputSize ?? '…'}${metricsSnapshot.detector.inputSize === DETECTOR_INPUT_SIZE_LITE ? ' (облегчённый)' : ''}   калибровка: ${metricsSnapshot.detector.calibrationMs ?? '…'} мс`,
+            `детекция: ~${metricsSnapshot.detection.avgMs} мс (макс ${metricsSnapshot.detection.maxMs})`,
+            `интервал: ~${metricsSnapshot.detection.avgIntervalMs} мс   всего: ${metricsSnapshot.total.count}`,
+            `зависания: ${metricsSnapshot.longTasks.supported ? `${metricsSnapshot.longTasks.count} шт / ${metricsSnapshot.longTasks.totalMs} мс (макс ${metricsSnapshot.longTasks.maxMs})` : 'н/д'}`,
+            `память: тензоры ${metricsSnapshot.memory.tensors} / ${metricsSnapshot.memory.tensorMb} МБ   heap ${metricsSnapshot.memory.jsHeapMb ?? 'н/д'} МБ`,
+            metricsSnapshot.error ? `ОШИБКА: ${metricsSnapshot.error}` : ''
+          ]
+            .filter(Boolean)
+            .join('\n')}
+        </pre>
+      )}
+
       <video
         ref={videoRef}
         autoPlay
