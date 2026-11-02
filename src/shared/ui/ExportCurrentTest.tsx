@@ -10,9 +10,11 @@ import { useQuery } from '@tanstack/react-query'
 import { getSubjects } from '@/features/api/api'
 import { Alert } from '@mui/material'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
+import { useLang } from '@/shared/i18n'
 
 export default function ExportCurrentTest({ currentSubjectName, selectedSubject, addressedSubjectId }: { currentSubjectName: string, selectedSubject: (id: number | null) => void, addressedSubjectId: number | null}) {
   // selectedSubjectId, setSelectedSubjectId, subjects - получаю от родителя и просто передаю в SubjectSelect получая от него конкретный предмет и отправлю в родитель выбранный предмет
+  const { t } = useLang()
   const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null)
   const [subjectName, setSubjectName] = useState('');
   const [addressed, setAddressed] = useState('');
@@ -51,7 +53,7 @@ export default function ExportCurrentTest({ currentSubjectName, selectedSubject,
     <Box>
       {subjectName ? (
         <p className={'flex items-center gap-1 mb-3 text-sm mt-3'}>
-          Текущий предмет:
+          {t.tests.currentSubject}
           <span className={' flex items-center gap-1 text-gray-400'}>
             <InfoOutlinedIcon fontSize={'small'} /> <span className={'max-w-[170px] overflow-hidden text-nowrap text-ellipsis block'}>{subjectName}</span>
           </span>
@@ -61,7 +63,7 @@ export default function ExportCurrentTest({ currentSubjectName, selectedSubject,
       )}
       <Box className={'flex items-center gap-2 justify-between flex-col sm:flex-row my-3'}>
         <Box className={'w-full'}>
-          <label className={'text-[var(--myDarkColor)]'}>Действие</label>
+          <label className={'text-[var(--myDarkColor)]'}>{t.common.action}</label>
           <Box className={'flex items-center'}>
             <Button
               variant='contained'
@@ -74,7 +76,7 @@ export default function ExportCurrentTest({ currentSubjectName, selectedSubject,
               startIcon={<ArrowRightAltOutlinedIcon fontSize={'small'} />}
             >
               {' '}
-              Переместить
+              {t.common.move}
             </Button>
             <Button
               variant='outlined'
@@ -87,12 +89,12 @@ export default function ExportCurrentTest({ currentSubjectName, selectedSubject,
               startIcon={<ContentCopyOutlinedIcon fontSize={'small'} />}
             >
               {' '}
-              Копировать
+              {t.common.copy}
             </Button>
           </Box>
         </Box>
         <div className={'w-full sm:w-[80%]'}>
-          <label className={'text-[var(--myDarkColor)]'}>Предмет: </label>
+          <label className={'text-[var(--myDarkColor)]'}>{t.common.subject}: </label>
           {addressedSubjectId ? (
             <div className={'text-gray-400 max-w-[170px] overflow-hidden text-nowrap text-ellipsis'}>{addressed}</div>
           ) : (
@@ -105,8 +107,7 @@ export default function ExportCurrentTest({ currentSubjectName, selectedSubject,
         </div>
       </Box>
       <Alert severity='info' className={'text-[13px] p-2'}>
-        Данный тест будет перемещен в выбранный предмет. Он не будет доступен в текущем предмете. Редактируйте с
-        осторожностью.
+        {t.tests.moveNote}
       </Alert>
     </Box>
   )

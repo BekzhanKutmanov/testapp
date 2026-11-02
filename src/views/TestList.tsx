@@ -40,8 +40,10 @@ import ArrowRightAltOutlinedIcon from '@mui/icons-material/ArrowRightAltOutlined
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined'
 import { useThemeContext } from '@/features/ThemeContext'
 import AddIcon from '@mui/icons-material/Add';
+import { useLang } from '@/shared/i18n'
 
 export default function TestListClient({ id }: { id: string }) {
+  const { t } = useLang()
   const { ctxDndFn, setCtxDndFn } = useThemeContext();
 
   const [tests, setTests] = useState<TestItem[]>([])
@@ -129,13 +131,13 @@ export default function TestListClient({ id }: { id: string }) {
   // рендер модального окна создания тестов
   const renderCreateTestModal = () => (
     <Dialog open={isCreateTestModalOpen} onClose={() => setIsCreateTestModalOpen(false)} fullWidth maxWidth='xs'>
-      <DialogTitle>Создание теста</DialogTitle>
+      <DialogTitle>{t.tests.createTitle}</DialogTitle>
       <DialogContent>
         <Box>
           <TextField
             autoFocus
             margin='dense'
-            label='Название теста'
+            label={t.tests.testName}
             type='text'
             fullWidth
             variant='outlined'
@@ -154,7 +156,7 @@ export default function TestListClient({ id }: { id: string }) {
             onClick={() => setTestImportFn(!testImportFn)}
             className={'cursor-pointer text-[13px] text-blue-500 hover:text-blue-600'}
           >
-            [{testImportFn ? '-' : '+'}] Импортировать готовый тест
+            [{testImportFn ? '-' : '+'}] {t.tests.importReady}
           </span>
         </div>
 
@@ -168,10 +170,10 @@ export default function TestListClient({ id }: { id: string }) {
       </DialogContent>
       <DialogActions className='pb-4 px-6'>
         <Button size={'small'} onClick={() => setIsCreateTestModalOpen(false)} color='inherit'>
-          Отмена
+          {t.common.cancel}
         </Button>
         <Button size={'small'} onClick={handleAddTest} variant='contained' color='primary'>
-          Сохранить
+          {t.common.save}
         </Button>
       </DialogActions>
     </Dialog>
@@ -204,10 +206,10 @@ export default function TestListClient({ id }: { id: string }) {
                   justifyContent: 'center'
                 }}
               >
-                <Image alt={'Нет данных'} src={'/images/empty-box.png'} width={140} height={140} />
+                <Image alt={t.common.noData} src={'/images/empty-box.png'} width={140} height={140} />
               </Box>
               <Typography variant='body1' color='' sx={{ mb: 4, maxWidth: 300 }}>
-                Тестов пока нет. Нажмите кнопку выше, чтобы создать первый тест.
+                {t.tests.empty}
               </Typography>
             </>
           </InfoBlock>
@@ -219,12 +221,12 @@ export default function TestListClient({ id }: { id: string }) {
   // Рендер модального окна редактирования
   const renderEditModal = () => (
     <Dialog open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} fullWidth maxWidth='xs'>
-      <DialogTitle>Редактирование теста</DialogTitle>
+      <DialogTitle>{t.tests.editTitle}</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
           margin='dense'
-          label='Название теста'
+          label={t.tests.testName}
           type='text'
           fullWidth
           variant='outlined'
@@ -241,7 +243,7 @@ export default function TestListClient({ id }: { id: string }) {
               onClick={() => setExportTestFn(!exportTestFn)}
               className={'cursor-pointer text-[13px] text-blue-500 hover:text-blue-600'}
             >
-              [{exportTestFn ? '-' : '+'}] Переместить или копировать в другой предмет
+              [{exportTestFn ? '-' : '+'}] {t.tests.moveOrCopy}
             </span>
           </div>
 
@@ -264,10 +266,10 @@ export default function TestListClient({ id }: { id: string }) {
           }}
           color='inherit'
         >
-          Отмена
+          {t.common.cancel}
         </Button>
         <Button onClick={handleSaveEdit} variant='contained' color='primary'>
-          Сохранить
+          {t.common.save}
         </Button>
       </DialogActions>
     </Dialog>
@@ -276,18 +278,18 @@ export default function TestListClient({ id }: { id: string }) {
   // Рендер модального окна подтверждения удаления
   const renderDeleteConfirmModal = () => (
     <Dialog open={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirm(false)}>
-      <DialogTitle>Подтверждение удаления</DialogTitle>
+      <DialogTitle>{t.tests.deleteTitle}</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Вы уверены, что хотите удалить этот тест? Это действие нельзя будет отменить.
+          {t.tests.deleteText}
         </DialogContentText>
       </DialogContent>
       <DialogActions className='pb-4 px-6'>
         <Button onClick={() => setIsDeleteConfirm(false)} color='inherit'>
-          Отмена
+          {t.common.cancel}
         </Button>
         <Button onClick={handleConfirmDelete} variant='contained' color='error'>
-          Удалить
+          {t.common.delete}
         </Button>
       </DialogActions>
     </Dialog>
@@ -296,7 +298,7 @@ export default function TestListClient({ id }: { id: string }) {
   // мод окно для днд подтверждения | копирование или перемещение
   const renderDndModal = () => (
     <Dialog open={ctxDndFn?.state} onClose={() => setCtxDndFn({state: false, subjectId: null})} fullWidth maxWidth='xs'>
-      <DialogTitle>Действие</DialogTitle>
+      <DialogTitle>{t.common.action}</DialogTitle>
       {/*<p className={'px-4'}>Переместить тест в: <b>{currentSubjectFind()}</b> </p>*/}
       {/*<Box className={'flex items-center p-4'}>*/}
       {/*  <Button*/}
@@ -341,10 +343,10 @@ export default function TestListClient({ id }: { id: string }) {
           }}
           color='inherit'
         >
-          Отмена
+          {t.common.cancel}
         </Button>
         <Button onClick={()=> console.log('yahaaa blyat!')} variant='contained' size={'small'} color='primary'>
-          Сохранить
+          {t.common.save}
         </Button>
       </DialogActions>
     </Dialog>
@@ -386,7 +388,7 @@ export default function TestListClient({ id }: { id: string }) {
           onClick={() => setIsCreateTestModalOpen(true)}
           className='whitespace-nowrap w-full sm:w-auto'
         >
-          Создать тест
+          {t.tests.createTest}
         </Button>
       </Stack>
 

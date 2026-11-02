@@ -14,6 +14,7 @@ import {
   DEFAULT_QUESTION_COUNT,
   type Plan,
 } from './PlansTable';
+import { useLang } from '@/shared/i18n';
 
 interface PlansMobileListProps {
   plans: Plan[];
@@ -50,10 +51,12 @@ export default function PlansMobileList({
   onStudents,
   className = '',
 }: PlansMobileListProps) {
+  const { t } = useLang();
+
   if (plans.length === 0) {
     return (
       <div className={`py-16 text-center text-sm text-slate-400 ${className}`}>
-        Эч нерсе табылган жок
+        {t.common.nothingFound}
       </div>
     );
   }
@@ -86,18 +89,18 @@ export default function PlansMobileList({
               <Stat
                 icon={<HelpOutlineRoundedIcon sx={{ fontSize: 16 }} className="!text-blue-500" />}
               >
-                {plan.questionCount ?? DEFAULT_QUESTION_COUNT} суроо
+                {plan.questionCount ?? DEFAULT_QUESTION_COUNT} {t.planning.questionsShort}
               </Stat>
               <Stat
                 icon={<ScheduleRoundedIcon sx={{ fontSize: 16 }} className="!text-slate-400" />}
               >
-                {plan.duration ?? DEFAULT_DURATION} мүн.
+                {plan.duration ?? DEFAULT_DURATION} {t.planning.minutesShort}
               </Stat>
               {/* TODO(real data): камера вкл/выкл */}
               <Stat
                 icon={<VideocamRoundedIcon sx={{ fontSize: 16 }} className="!text-slate-500" />}
               >
-                Камера
+                {t.planning.camera}
               </Stat>
             </div>
 
@@ -118,21 +121,21 @@ export default function PlansMobileList({
           <div className="flex items-center justify-between border-t border-slate-100 px-2 py-1.5">
             <div className="flex items-center">
               <IconButton
-                aria-label="Өзгөртүү"
+                aria-label={t.common.change}
                 onClick={() => onEdit?.(plan)}
                 className="!rounded-xl !p-2.5 !text-emerald-600 active:!bg-emerald-50"
               >
                 <EditRoundedIcon fontSize="small" />
               </IconButton>
               <IconButton
-                aria-label="Ссылканы көчүрүү"
+                aria-label={t.planning.copyLink}
                 onClick={() => onCopyLink(plan)}
                 className="!rounded-xl !p-2.5 !text-blue-600 active:!bg-blue-50"
               >
                 <LinkRoundedIcon fontSize="small" />
               </IconButton>
               <IconButton
-                aria-label="Студенттер"
+                aria-label={t.common.students}
                 onClick={() => onStudents?.(plan)}
                 className="!rounded-xl !p-2.5 !text-indigo-600 active:!bg-indigo-50"
               >
@@ -141,7 +144,7 @@ export default function PlansMobileList({
             </div>
 
             <IconButton
-              aria-label="Өчүрүү"
+              aria-label={t.common.delete}
               onClick={() => onDelete(plan.id)}
               className="!rounded-xl !p-2.5 !text-rose-500 active:!bg-rose-50"
             >

@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { useLang } from '@/shared/i18n'
 
 interface TestItem {
   id: string
@@ -30,6 +31,7 @@ interface TestCardProps {
 }
 
 export default function TestCard({ subjectId, test, onEditClick, onDeleteClick, testsLength }: TestCardProps) {
+  const { t } = useLang()
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: test.id,
     data: test // важно: чтобы DragOverlay знал что рисовать
@@ -48,19 +50,19 @@ export default function TestCard({ subjectId, test, onEditClick, onDeleteClick, 
     {
       id: 'edit',
       icon: <EditIcon fontSize="small" color="primary" />,
-      text: 'Редактировать',
+      text: t.common.edit,
       onClick: () => onEditClick(test),
     },
     {
       id: 'copy',
       icon: <ContentCopyIcon fontSize="small" color={'action'} />,
-      text: 'Копировать',
+      text: t.common.copy,
       onClick: () => console.log(test),
     },
     {
       id: 'delete',
       icon: <DeleteOutlineIcon fontSize="small" color="error" />,
-      text: 'Удалить',
+      text: t.common.delete,
       onClick: () => onDeleteClick(test.id),
     },
   ];
@@ -100,7 +102,7 @@ export default function TestCard({ subjectId, test, onEditClick, onDeleteClick, 
               {test.name}
             </Link>
             <Typography variant='body2' color='textSecondary' style={{ fontSize: '12px', marginTop: '8px' }}>
-              Дата создания: {test.createdAt}
+              {t.common.createdAt}: {test.createdAt}
             </Typography>
           </Box>
         </Box>

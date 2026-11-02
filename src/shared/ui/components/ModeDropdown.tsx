@@ -10,8 +10,10 @@ import IconButton from '@mui/material/IconButton'
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
 import { useThemeContext } from '@/features/ThemeContext'
+import { useLang } from '@/shared/i18n'
 
 const ModeDropdown = () => {
+  const { t } = useLang()
   const {ctxTheme, setCtxTheme} = useThemeContext();
 
   // States
@@ -44,11 +46,10 @@ const ModeDropdown = () => {
   return (
     <>
       <Tooltip
-        title={settings.mode + ' Mode'}
+        title={settings.mode === 'dark' ? t.common.darkMode : t.common.lightMode}
         onOpen={() => setTooltipOpen(true)}
         onClose={() => setTooltipOpen(false)}
         open={tooltipOpen}
-        PopperProps={{ className: 'capitalize' }}
       >
         <IconButton ref={anchorRef} onClick={handleToggle} className='text-textPrimary'>
           <i className={getModeIcon()} />

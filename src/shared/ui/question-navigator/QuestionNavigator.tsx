@@ -6,6 +6,7 @@ import FormatListNumberedRoundedIcon from '@mui/icons-material/FormatListNumbere
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import NavigationItems from '../navigation-items/NavigationItems';
+import { useLang } from '@/shared/i18n';
 
 export interface NavigatorItem {
     id: string;
@@ -23,6 +24,7 @@ interface QuestionNavigatorProps {
  * Открыто — сетка номеров: красный = без ответа, зелёный = есть ответ.
  */
 export default function QuestionNavigator({ items, onSelect }: QuestionNavigatorProps) {
+    const { t } = useLang();
     const [open, setOpen] = useState(false);
     const rootRef = useRef<HTMLDivElement>(null);
 
@@ -60,7 +62,7 @@ export default function QuestionNavigator({ items, onSelect }: QuestionNavigator
                 <ButtonBase
                     key={item.id}
                     onClick={() => handleSelect(item.id)}
-                    aria-label={`Вопрос ${index + 1}: ${item.answered ? 'есть ответ' : 'нет ответа'}`}
+                    aria-label={`${t.questionNav.question} ${index + 1}: ${item.answered ? t.questionNav.hasAnswer : t.questionNav.noAnswer}`}
                     className={`aspect-square w-[30px] rounded-lg border text-xs font-semibold transition-colors duration-300 ${item.answered
                         ? 'border-emerald-200 bg-emerald-100 text-emerald-700 hover:bg-emerald-100'
                         : 'border-red-200 bg-red-100 text-red-600 hover:bg-red-100'
@@ -82,7 +84,7 @@ export default function QuestionNavigator({ items, onSelect }: QuestionNavigator
                         }`}
                 >
                     <p className="mb-2.5 text-xs text-slate-500">
-                        Отвечено {answeredCount} из {items.length}
+                        {t.studentTest.answered} {answeredCount} {t.common.of} {items.length}
                     </p>
 
                     {navigationItems()}
@@ -100,7 +102,7 @@ export default function QuestionNavigator({ items, onSelect }: QuestionNavigator
                     <Fab
                         size="small"
                         onClick={() => setOpen((v) => !v)}
-                        aria-label={open ? 'Скрыть список вопросов' : 'Показать список вопросов'}
+                        aria-label={open ? t.questionNav.hideQuestionList : t.questionNav.showQuestionList}
                         aria-expanded={open}
                         aria-controls="question-navigator-panel"
                         sx={{
@@ -120,7 +122,7 @@ export default function QuestionNavigator({ items, onSelect }: QuestionNavigator
                 >
                     <div
                         onClick={() => setOpen((v) => !v)}
-                        aria-label={open ? 'Скрыть список вопросов' : 'Показать список вопросов'}
+                        aria-label={open ? t.questionNav.hideQuestionList : t.questionNav.showQuestionList}
                         aria-expanded={open}
                         aria-controls="question-navigator-panel"
                         className='flex items-center bg-black h-12 cursor-pointer'
@@ -143,7 +145,7 @@ export default function QuestionNavigator({ items, onSelect }: QuestionNavigator
     //                     }`}
     //             >
     //                 {/* <p className="mb-2.5 text-xs text-slate-500">
-    //                     Отвечено {answeredCount} из {items.length}
+    //                     {t.studentTest.answered} {answeredCount} {t.common.of} {items.length}
     //                 </p> */}
 
     //                 <div className="flex gap-2 justify-between">
@@ -151,7 +153,7 @@ export default function QuestionNavigator({ items, onSelect }: QuestionNavigator
     //                         <ButtonBase
     //                             key={item.id}
     //                             onClick={() => handleSelect(item.id)}
-    //                             aria-label={`Вопрос ${index + 1}: ${item.answered ? 'есть ответ' : 'нет ответа'}`}
+    //                             aria-label={`${t.questionNav.question} ${index + 1}: ${item.answered ? t.questionNav.hasAnswer : t.questionNav.noAnswer}`}
     //                             className={`aspect-square w-[20px] rounded-lg border text-xs font-semibold text-white transition-colors duration-300 ${item.answered
     //                                 ? 'border-emerald-200 bg-emerald-400 text-emerald-700 hover:bg-emerald-100'
     //                                 : 'border-red-200 bg-red-400 text-red-600 hover:bg-red-100'
@@ -174,7 +176,7 @@ export default function QuestionNavigator({ items, onSelect }: QuestionNavigator
     //                 <Fab
     //                     size="small"
     //                     onClick={() => setOpen((v) => !v)}
-    //                     aria-label={open ? 'Скрыть список вопросов' : 'Показать список вопросов'}
+    //                     aria-label={open ? t.questionNav.hideQuestionList : t.questionNav.showQuestionList}
     //                     aria-expanded={open}
     //                     aria-controls="question-navigator-panel"
     //                     sx={{
@@ -194,7 +196,7 @@ export default function QuestionNavigator({ items, onSelect }: QuestionNavigator
     //             >
     //                 <div
     //                     onClick={() => setOpen((v) => !v)}
-    //                     aria-label={open ? 'Скрыть список вопросов' : 'Показать список вопросов'}
+    //                     aria-label={open ? t.questionNav.hideQuestionList : t.questionNav.showQuestionList}
     //                     aria-expanded={open}
     //                     aria-controls="question-navigator-panel"
     //                     className='flex items-center bg-black h-12 cursor-pointer'

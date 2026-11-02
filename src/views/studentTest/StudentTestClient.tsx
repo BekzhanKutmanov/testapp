@@ -31,9 +31,11 @@ import NavigationItems from '@/shared/ui/navigation-items/NavigationItems';
 import { useMediaQuery } from '@/shared/model/useMediaQuery';
 import { ProctorCamera, type ProctorError, type ProctorState } from '@/features/components/Face';
 import ProctorGate from './ProctorGate';
+import { useLang } from '@/shared/i18n';
 
 export default function StudentTestClient() {
   const router = useRouter();
+  const { t } = useLang();
 
   const [answers, setAnswers] = useState<Answers>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -154,10 +156,10 @@ export default function StudentTestClient() {
       } catch {
         submittedRef.current = false;
         setStatus('idle');
-        setError('Не удалось отправить тест. Проверьте соединение и попробуйте ещё раз.');
+        setError(t.studentTest.sendError);
       }
     },
-    [router, clearDeadline],
+    [router, clearDeadline, t],
   );
 
   // время вышло — отправляем автоматически
@@ -225,7 +227,7 @@ export default function StudentTestClient() {
                 {TEST_TITLE}
               </h1>
               <p className="text-xs text-slate-500 sm:text-sm">
-                Отвечено {answeredCount} из {total}
+                {t.studentTest.answered} {answeredCount} {t.common.of} {total}
               </p>
             </div>
 
@@ -233,7 +235,7 @@ export default function StudentTestClient() {
               className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold tabular-nums transition-colors duration-500 sm:px-4 ${isLow ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-700'
                 }`}
               role="timer"
-              aria-label="Оставшееся время"
+              aria-label={t.studentTest.timeLeft}
             >
               <AccessTimeRoundedIcon sx={{ fontSize: 18 }} />
               {timeLeft === null ? '--:--' : formatTime(timeLeft)}
@@ -283,11 +285,11 @@ export default function StudentTestClient() {
                     }`}
                 >
                   {unanswered === 0
-                    ? 'Вы ответили на все вопросы'
-                    : `Без ответа: ${unanswered}`}
+                    ? t.studentTest.allAnswered
+                    : `${t.studentTest.unanswered}: ${unanswered}`}
                 </p>
                 <p className="mt-0.5 text-sm text-slate-500">
-                  После отправки изменить ответы будет нельзя.
+                  {t.studentTest.noChangeAfterSubmit}
                 </p>
               </div>
 
@@ -307,7 +309,7 @@ export default function StudentTestClient() {
                   width: { xs: '100%', sm: 'auto' },
                 }}
               >
-                Отправить тест
+                {t.studentTest.submit}
               </Button>
             </div>
 
@@ -362,11 +364,10 @@ export default function StudentTestClient() {
           transition: { onExited: handleDialogExited },
         }}
       >
-        <DialogTitle sx={{ fontWeight: 600 }}>Отправить тест?</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>{t.studentTest.submitConfirm}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Вопросов без ответа: {unanswered}. После отправки вернуться к ним не получится.
-            Если вернётесь, мы подсветим пропущенные и перейдём к первому из них.
+            {t.studentTest.unansweredCount}: {unanswered}. {t.studentTest.submitDialogText}
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
@@ -374,7 +375,7 @@ export default function StudentTestClient() {
             onClick={handleDialogCancel}
             sx={{ textTransform: 'none', borderRadius: '10px' }}
           >
-            Вернуться к вопросам
+            {t.studentTest.backToQuestions}
           </Button>
           <Button
             variant="contained"
@@ -382,7 +383,7 @@ export default function StudentTestClient() {
             onClick={() => submit('manual')}
             sx={{ textTransform: 'none', borderRadius: '10px' }}
           >
-            Всё равно отправить
+            {t.studentTest.submitAnyway}
           </Button>
         </DialogActions>
       </Dialog>
@@ -393,8 +394,8 @@ export default function StudentTestClient() {
           <CircularProgress size={40} />
           <p className="text-base font-medium text-slate-800">
             {status === 'timeout'
-              ? 'Время вышло. Отправляем ваши ответы…'
-              : 'Отправляем ваши ответы…'}
+              ? t.studentTest.timeUp
+              : t.studentTest.sending}
           </p>
         </div>
       )}

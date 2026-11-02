@@ -11,6 +11,7 @@ import VerticalAlignTopRoundedIcon from '@mui/icons-material/VerticalAlignTopRou
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 
 import { type NavigatorItem } from '@/shared/ui/question-navigator/QuestionNavigator'
+import { useLang } from '@/shared/i18n'
 
 export interface CreateTestNavigatorItem extends NavigatorItem {
   /** Краткий текст вопроса (без HTML) для режима «Список» */
@@ -39,6 +40,7 @@ const RING_LENGTH = 2 * Math.PI * RING_RADIUS
  * по клику открывается панель (на телефоне — нижняя шторка) со списком вопросов.
  */
 export default function CreateTestNavigator({ items, onSelect, onAddQuestion }: CreateTestNavigatorProps) {
+  const { t } = useLang()
   const [open, setOpen] = useState(false)
   const [view, setView] = useState<ViewMode>('grid')
   const [filter, setFilter] = useState<Filter>('all')
@@ -176,7 +178,7 @@ export default function CreateTestNavigator({ items, onSelect, onAddQuestion }: 
         <div
           id='create-test-navigator-panel'
           role='dialog'
-          aria-label='Навигация по вопросам'
+          aria-label={t.questionNav.title}
           className={`fixed inset-x-0 bottom-0 flex max-h-[80vh] flex-col overflow-hidden rounded-t-3xl border border-solid bg-backgroundPaper shadow-2xl transition-all duration-300 ease-out sm:absolute sm:inset-x-auto sm:bottom-[84px] sm:right-0 sm:max-h-[70vh] sm:w-[340px] sm:origin-bottom-right sm:rounded-2xl ${
             open
               ? 'visible translate-y-0 opacity-100 sm:scale-100'
@@ -192,14 +194,14 @@ export default function CreateTestNavigator({ items, onSelect, onAddQuestion }: 
           <div className='px-4 pb-3 pt-3 sm:pt-4'>
             <div className='flex items-center justify-between gap-2'>
               <div>
-                <p className='m-0 text-base font-bold text-textPrimary'>Вопросы</p>
+                <p className='m-0 text-base font-bold text-textPrimary'>{t.questionNav.questions}</p>
                 <p className='m-0 mt-0.5 text-xs text-textSecondary'>
-                  Заполнено <span className='font-semibold text-textPrimary'>{completedCount}</span> из {total}
+                  {t.questionNav.filled} <span className='font-semibold text-textPrimary'>{completedCount}</span> {t.common.of} {total}
                 </p>
               </div>
               <ButtonBase
                 onClick={() => setOpen(false)}
-                aria-label='Закрыть'
+                aria-label={t.common.close}
                 className='flex h-8 w-8 items-center justify-center rounded-full text-textSecondary hover:bg-actionHover'
               >
                 <CloseRoundedIcon fontSize='small' />
@@ -218,26 +220,26 @@ export default function CreateTestNavigator({ items, onSelect, onAddQuestion }: 
             <div className='mt-3 flex items-center gap-2'>
               <div className='flex flex-1 gap-1 rounded-lg bg-actionHover p-1'>
                 <ButtonBase onClick={() => setFilter('all')} className={segmentBtn(filter === 'all')}>
-                  Все · {total}
+                  {t.common.all} · {total}
                 </ButtonBase>
                 <ButtonBase onClick={() => setFilter('incomplete')} className={segmentBtn(filter === 'incomplete')}>
-                  Незаполненные · {incompleteCount}
+                  {t.questionNav.incomplete} · {incompleteCount}
                 </ButtonBase>
               </div>
               <div className='flex gap-1 rounded-lg bg-actionHover p-1'>
-                <Tooltip title='Сетка'>
+                <Tooltip title={t.questionNav.grid}>
                   <ButtonBase
                     onClick={() => setView('grid')}
-                    aria-label='Показать сеткой'
+                    aria-label={t.questionNav.showGrid}
                     className={`${segmentBtn(view === 'grid')} !flex-none !px-1.5`}
                   >
                     <GridViewRoundedIcon sx={{ fontSize: 16 }} />
                   </ButtonBase>
                 </Tooltip>
-                <Tooltip title='Список'>
+                <Tooltip title={t.questionNav.list}>
                   <ButtonBase
                     onClick={() => setView('list')}
-                    aria-label='Показать списком'
+                    aria-label={t.questionNav.showList}
                     className={`${segmentBtn(view === 'list')} !flex-none !px-1.5`}
                   >
                     <ViewListRoundedIcon sx={{ fontSize: 16 }} />
@@ -252,8 +254,8 @@ export default function CreateTestNavigator({ items, onSelect, onAddQuestion }: 
             {visibleItems.length === 0 ? (
               <div className='flex flex-col items-center justify-center py-6 text-center'>
                 <span className='text-2xl'>🎉</span>
-                <p className='m-0 mt-2 text-sm font-semibold text-textPrimary'>Все вопросы заполнены</p>
-                <p className='m-0 mt-1 text-xs text-textSecondary'>Можно сохранять тест</p>
+                <p className='m-0 mt-2 text-sm font-semibold text-textPrimary'>{t.questionNav.allFilled}</p>
+                <p className='m-0 mt-1 text-xs text-textSecondary'>{t.questionNav.canSave}</p>
               </div>
             ) : view === 'grid' ? (
               <div className='grid grid-cols-[repeat(auto-fill,minmax(44px,1fr))] gap-2'>
@@ -261,10 +263,10 @@ export default function CreateTestNavigator({ items, onSelect, onAddQuestion }: 
                   const isCurrent = item.id === currentId
 
                   return (
-                    <Tooltip key={item.id} title={item.preview || 'Без текста'} placement='top' arrow enterDelay={400}>
+                    <Tooltip key={item.id} title={item.preview || t.questionNav.noText} placement='top' arrow enterDelay={400}>
                       <ButtonBase
                         onClick={() => handleSelect(item.id)}
-                        aria-label={`Вопрос ${item.index + 1}: ${item.answered ? 'заполнен' : 'не заполнен'}`}
+                        aria-label={`${t.questionNav.question} ${item.index + 1}: ${(item.answered ? t.questionNav.filledOne : t.questionNav.notFilled).toLowerCase()}`}
                         aria-current={isCurrent ? 'true' : undefined}
                         className={`h-11 rounded-xl border border-solid text-sm font-semibold transition-all duration-200 ${statusClasses(
                           item.answered
@@ -303,10 +305,10 @@ export default function CreateTestNavigator({ items, onSelect, onAddQuestion }: 
                               item.preview ? 'text-textPrimary' : 'italic text-textDisabled'
                             }`}
                           >
-                            {item.preview || 'Без текста'}
+                            {item.preview || t.questionNav.noText}
                           </span>
                           <span className={`block text-[11px] ${item.answered ? 'text-emerald-600' : 'text-amber-600'}`}>
-                            {item.answered ? 'Заполнен' : 'Не заполнен'}
+                            {item.answered ? t.questionNav.filledOne : t.questionNav.notFilled}
                           </span>
                         </span>
                       </ButtonBase>
@@ -321,13 +323,13 @@ export default function CreateTestNavigator({ items, onSelect, onAddQuestion }: 
           <div className='border-0 border-t border-solid px-4 py-3'>
             <div className='mb-3 flex items-center gap-4 text-[11px] text-textSecondary'>
               <span className='flex items-center gap-1.5'>
-                <span className='h-2.5 w-2.5 rounded-full bg-emerald-400' /> Заполнен
+                <span className='h-2.5 w-2.5 rounded-full bg-emerald-400' /> {t.questionNav.filledOne}
               </span>
               <span className='flex items-center gap-1.5'>
-                <span className='h-2.5 w-2.5 rounded-full bg-amber-400' /> Не заполнен
+                <span className='h-2.5 w-2.5 rounded-full bg-amber-400' /> {t.questionNav.notFilled}
               </span>
               <span className='flex items-center gap-1.5'>
-                <span className='h-2.5 w-2.5 rounded-full ring-2 ring-primary' /> Текущий
+                <span className='h-2.5 w-2.5 rounded-full ring-2 ring-primary' /> {t.questionNav.current}
               </span>
             </div>
             <div className='flex gap-2'>
@@ -335,14 +337,14 @@ export default function CreateTestNavigator({ items, onSelect, onAddQuestion }: 
                 onClick={handleScrollTop}
                 className='flex flex-1 items-center justify-center gap-1 rounded-lg border border-solid py-2 text-xs font-semibold text-textSecondary hover:bg-actionHover'
               >
-                <VerticalAlignTopRoundedIcon sx={{ fontSize: 16 }} /> В начало
+                <VerticalAlignTopRoundedIcon sx={{ fontSize: 16 }} /> {t.questionNav.toTop}
               </ButtonBase>
               {onAddQuestion && (
                 <ButtonBase
                   onClick={handleAdd}
                   className='flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary py-2 text-xs font-semibold text-white hover:opacity-90'
                 >
-                  <AddRoundedIcon sx={{ fontSize: 16 }} /> Новый вопрос
+                  <AddRoundedIcon sx={{ fontSize: 16 }} /> {t.questionNav.newQuestion}
                 </ButtonBase>
               )}
             </div>
@@ -350,10 +352,10 @@ export default function CreateTestNavigator({ items, onSelect, onAddQuestion }: 
         </div>
 
         {/* Кнопка с кольцом прогресса */}
-        <Tooltip title={open ? '' : 'Навигация по вопросам'} placement='left' arrow>
+        <Tooltip title={open ? '' : t.questionNav.title} placement='left' arrow>
           <ButtonBase
             onClick={() => setOpen(v => !v)}
-            aria-label={open ? 'Скрыть навигацию по вопросам' : 'Показать навигацию по вопросам'}
+            aria-label={open ? t.questionNav.hide : t.questionNav.show}
             aria-expanded={open}
             aria-controls='create-test-navigator-panel'
             className={`relative h-14 w-14 rounded-full transition-transform duration-300 hover:scale-105 sm:h-16 sm:w-16 ${

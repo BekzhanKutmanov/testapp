@@ -4,11 +4,12 @@ import { Checkbox, Radio, TextField } from '@mui/material';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import type { Question, QuestionType } from '../../../types/questions/question-page';
 import { isAnswered, questionDomId } from '../../lib/question-page/utils';
+import { useLang } from '@/shared/i18n';
 
-const QUESTION_HINT: Record<QuestionType, string> = {
-  RADIO: 'Выберите один вариант',
-  CHECKBOX: 'Выберите все подходящие варианты',
-  TEXT: 'Введите ответ своими словами',
+const QUESTION_HINT: Record<QuestionType, 'hintRadio' | 'hintCheckbox' | 'hintText'> = {
+  RADIO: 'hintRadio',
+  CHECKBOX: 'hintCheckbox',
+  TEXT: 'hintText',
 };
 
 interface QuestionCardProps {
@@ -33,6 +34,7 @@ export default function QuestionCard({
   onCheckbox,
   onText,
 }: QuestionCardProps) {
+  const { t } = useLang();
   const done = isAnswered(selected);
 
   const borderClass = done
@@ -67,10 +69,10 @@ export default function QuestionCard({
           >
             {q.title}
           </h2>
-          <p className="mt-1 text-xs text-slate-500 sm:text-sm">{QUESTION_HINT[q.type]}</p>
+          <p className="mt-1 text-xs text-slate-500 sm:text-sm">{t.studentTest[QUESTION_HINT[q.type]]}</p>
           {invalid && (
             <p className="mt-1 text-xs font-medium text-red-600 sm:text-sm" role="alert">
-              Вы не ответили на этот вопрос
+              {t.studentTest.notAnswered}
             </p>
           )}
         </div>
@@ -82,7 +84,7 @@ export default function QuestionCard({
             fullWidth
             multiline
             minRows={3}
-            placeholder="Ваш ответ"
+            placeholder={t.studentTest.yourAnswer}
             value={selected[0] ?? ''}
             error={invalid}
             onChange={(e) => onText(q.id, e.target.value)}

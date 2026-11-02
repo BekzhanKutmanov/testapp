@@ -8,6 +8,7 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import { useThemeContext } from '@/features/ThemeContext'
+import { useLang } from '@/shared/i18n'
 
 interface DndUiContextType {
   isDragging: boolean
@@ -20,6 +21,7 @@ export const useDndUi = () => useContext(DndUiContext)
 
 // TestCardPreview.tsx — чисто визуал, без useDraggable
 export function TestCardPreview({ test }: { test: { id: string; name: string; createdAt: string } }) {
+  const { t } = useLang()
 
   return (
     <Card
@@ -38,7 +40,7 @@ export function TestCardPreview({ test }: { test: { id: string; name: string; cr
             {test.name}
           </Typography>
           <Typography variant='body2' color='textSecondary' style={{ fontSize: '12px' }}>
-            Дата создания: {test.createdAt}
+            {t.common.createdAt}: {test.createdAt}
           </Typography>
         </Box>
       </CardContent>
@@ -48,6 +50,7 @@ export function TestCardPreview({ test }: { test: { id: string; name: string; cr
 
 export default function TeacherDndProvider({ children }: { children: React.ReactNode }) {
   const { ctxDndFn, setCtxDndFn } = useThemeContext();
+  const { t } = useLang()
 
   const [activeId, setActiveId] = useState<string | null>(null)
   const [activeTest, setActiveTest] = useState<{ id: string; name: string } | null>(null)
@@ -95,7 +98,7 @@ export default function TeacherDndProvider({ children }: { children: React.React
         {/* Плавающая подсказка */}
         {activeId && (
           <div className="fixed top-5 right-5 z-50 rounded-lg bg-blue-600 text-white px-4 py-3 shadow-lg pointer-events-none">
-            Перетащите тест на нужный предмет
+            {t.tests.dragHint}
           </div>
         )}
 

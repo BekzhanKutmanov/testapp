@@ -9,12 +9,14 @@ import CustomSelect from '@/shared/ui/components/CustomSelect'
 import MenuItem from '@mui/material/MenuItem'
 import React, { useEffect, useState } from 'react'
 import { type SelectChangeEvent } from '@mui/material/Select';
+import { useLang } from '@/shared/i18n'
 
 interface CopyExternalTestType {
   subjectId: number, externalSubjectId: ()=> void, externalTestId: ()=> void
 }
 
 export default function CopyExternalTest({subjectId, externalSubjectId, externalTestId}: CopyExternalTestType) {
+  const { t } = useLang()
   const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
   const [selectedTestId, setSelectedTestId] = useState<number | null>(null);
 
@@ -25,7 +27,7 @@ export default function CopyExternalTest({subjectId, externalSubjectId, external
 
   const renderSubjectSelect = (subjects: SubjectType[])=> {
     return <Box className={'flex flex-col gap-1'}>
-      <label className={'text-[var(--myDarkColor)]'}>Предметы</label>
+      <label className={'text-[var(--myDarkColor)]'}>{t.common.subjects}</label>
       <CustomSelect
         sx={{ width: '30vw', height: '8vh', '& .MuiSelect-select': { padding: '1.5vh 1vw', fontSize: '3vh' } }}
         value={selectedSubjectId}
@@ -42,7 +44,7 @@ export default function CopyExternalTest({subjectId, externalSubjectId, external
 
   const renderTestSelect = (subjects: SubjectType[])=> {
     return <Box className={'flex flex-col gap-1'}>
-      <label className={'text-[var(--myDarkColor)]'}>Тесты</label>
+      <label className={'text-[var(--myDarkColor)]'}>{t.common.tests}</label>
       <CustomSelect
         sx={{ width: '30vw', height: '8vh', '& .MuiSelect-select': { padding: '1.5vh 1vw', fontSize: '3vh' } }}
         value={selectedSubjectId}
@@ -71,8 +73,7 @@ export default function CopyExternalTest({subjectId, externalSubjectId, external
     <div className={'flex flex-col gap-4 my-6'}>
       {renderSubjectSelect(data)}
       <Alert severity="info" className={'text-[13px] p-2'}>
-        Будут скопированы все вопросы, настройки и структура теста.
-        Оригинальный тест останется без изменений.
+        {t.tests.copyNote}
       </Alert>
     </div>
   );

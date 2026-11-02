@@ -41,6 +41,7 @@ import MainTitle from '@/shared/ui/components/MainTitle'
 
 import dynamic from 'next/dynamic';
 import CreateTestNavigator, { type CreateTestNavigatorItem } from './CreateTestNavigator'
+import { useLang } from '@/shared/i18n'
 // import RichTextField from '@/shared/ui/RichTextField'
 
 const RichTextField = dynamic(
@@ -78,6 +79,7 @@ interface Question {
 }
 
 const CreateTestClient = () => {
+  const { t } = useLang()
   const [testTitle, setTestTitle] = useState('')
   const [testDescription, setTestDescription] = useState('')
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null)
@@ -305,7 +307,7 @@ const CreateTestClient = () => {
   return (
     <Container maxWidth={false} sx={{ py: 4, maxWidth: '1800px', px: { xs: 0, sm: 2, md: 4 } }}>
       <BreadCrumb />
-      <MainTitle title={'Создание нового теста'} />
+      <MainTitle title={t.createTest.pageTitle} />
 
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Paper
@@ -325,7 +327,7 @@ const CreateTestClient = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, paddingBottom: '10px' }}>
               <DescriptionOutlinedIcon sx={{ color: 'primary.main', fontSize: 28 }} />
               <Typography variant='h5' sx={{ fontWeight: 700, color: 'text.primary' }}>
-                Основная информация
+                {t.createTest.mainInfo}
               </Typography>
             </Box>
 
@@ -333,8 +335,8 @@ const CreateTestClient = () => {
               fullWidth
               required
               size='small'
-              label='Название теста'
-              placeholder='Например: Итоговый тест по математике'
+              label={t.tests.testName}
+              placeholder={t.createTest.titlePlaceholder}
               value={testTitle}
               onChange={e => setTestTitle(e.target.value)}
               inputProps={{ maxLength: 100 }}
@@ -357,8 +359,8 @@ const CreateTestClient = () => {
               minRows={2}
               maxRows={6}
               size='small'
-              label='Описание (необязательно)'
-              placeholder='О чём этот тест, сколько времени займёт...'
+              label={t.createTest.description}
+              placeholder={t.createTest.descriptionPlaceholder}
               value={testDescription}
               onChange={e => setTestDescription(e.target.value)}
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
@@ -446,19 +448,19 @@ const CreateTestClient = () => {
                               <MenuItem value='RADIO'>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                   <RadioButtonCheckedIcon fontSize='small' color='action' />
-                                  <Typography variant='body2'>Один ответ</Typography>
+                                  <Typography variant='body2'>{t.createTest.singleAnswer}</Typography>
                                 </Box>
                               </MenuItem>
                               <MenuItem value='CHECKBOX'>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                   <CheckBoxIcon fontSize='small' color='action' />
-                                  <Typography variant='body2'>Несколько ответов</Typography>
+                                  <Typography variant='body2'>{t.createTest.multipleAnswers}</Typography>
                                 </Box>
                               </MenuItem>
                               <MenuItem value='TEXT'>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                   <ShortTextIcon fontSize='small' color='action' />
-                                  <Typography variant='body2'>Текстовый ответ</Typography>
+                                  <Typography variant='body2'>{t.createTest.textAnswer}</Typography>
                                 </Box>
                               </MenuItem>
                             </Select>
@@ -517,7 +519,7 @@ const CreateTestClient = () => {
                               fullWidth
                               disabled
                               variant='standard'
-                              placeholder='Текстовый ответ будет введен пользователем'
+                              placeholder={t.createTest.textAnswerPlaceholder}
                               sx={{ fontStyle: 'italic' }}
                             />
                           </Box>
@@ -543,7 +545,7 @@ const CreateTestClient = () => {
                                       transition: '0.2s'
                                     }}
                                   >
-                                    <Tooltip title={isCorrect ? 'Удалить из правильных' : 'Отметить как правильный'}>
+                                    <Tooltip title={isCorrect ? t.createTest.unmarkCorrect : t.createTest.markCorrect}>
                                       {question.type === 'RADIO' ? (
                                         <Radio
                                           size='small'
@@ -570,7 +572,7 @@ const CreateTestClient = () => {
                                       fullWidth
                                       size='small'
                                       variant='standard'
-                                      placeholder={`Вариант ${optIndex + 1}`}
+                                      placeholder={`${t.createTest.option} ${optIndex + 1}`}
                                       value={option.text}
                                       onChange={e => handleOptionTextChange(question.id, option.id, e.target.value)} // Подставьте вашу функцию изменения текста варианта
                                       InputProps={{ disableUnderline: true }}
@@ -606,7 +608,7 @@ const CreateTestClient = () => {
                                 '&:hover': { borderWidth: '1.5px', borderStyle: 'dashed' }
                               }}
                             >
-                              Добавить вариант ответа
+                              {t.createTest.addOption}
                             </Button>
                           </>
                         )}
@@ -616,12 +618,12 @@ const CreateTestClient = () => {
                     <Divider />
 
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5, px: 1, py: 0.5 }}>
-                      <Tooltip title='Сделать копию'>
+                      <Tooltip title={t.createTest.duplicate}>
                         <IconButton onClick={() => duplicateQuestion(question)} size='small'>
                           <ContentCopyIcon fontSize='small' />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title='Удалить вопрос'>
+                      <Tooltip title={t.createTest.deleteQuestion}>
                         <IconButton
                           onClick={() => deleteQuestion(question.id)}
                           color='error'
@@ -655,7 +657,7 @@ const CreateTestClient = () => {
               fontWeight: 600
             }}
           >
-            Добавить следующий вопрос
+            {t.createTest.addNextQuestion}
           </Button>
         </Box>
 

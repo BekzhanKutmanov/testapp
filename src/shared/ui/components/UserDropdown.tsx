@@ -21,6 +21,7 @@ import Divider from '@mui/material/Divider'
 import Button from '@mui/material/Button'
 
 import { getShortName } from '@/shared/utils/formatName';
+import { useLang } from '@/shared/i18n'
 
 // Styled component for badge content
 const BadgeContentSpan = styled('span')({
@@ -33,6 +34,7 @@ const BadgeContentSpan = styled('span')({
 })
 
 const UserDropdown = () => {
+  const { t } = useLang()
   // States
   const [open, setOpen] = useState(false)
 
@@ -99,7 +101,7 @@ const UserDropdown = () => {
                       <Typography className='font-medium' color='text.primary'>
                         {getShortName('Кутманов Бекжан')}
                       </Typography>
-                      <Typography variant='caption'>Преподаватель</Typography>
+                      <Typography variant='caption'>{t.common.teacher}</Typography>
                     </div>
                   </div>
                   <Divider className='mlb-1' />
@@ -113,7 +115,7 @@ const UserDropdown = () => {
                       onClick={e => handleDropdownClose(e, '/login')}
                       sx={{ '& .MuiButton-endIcon': { marginInlineStart: 1.5 } }}
                     >
-                      Выйти
+                      {t.common.logout}
                     </Button>
                   </div>
                 </MenuList>

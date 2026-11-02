@@ -14,6 +14,8 @@ import {
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
+import { useLang } from '@/shared/i18n';
+import type { Dict } from '@/shared/i18n';
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -60,21 +62,24 @@ interface AddStudentsDialogProps {
 /*  Config                                                                    */
 /* -------------------------------------------------------------------------- */
 
+// label и placeholder — ключи словаря t.planning
+type PlanningText = keyof Dict['planning'];
+
 const FIELDS: {
   key: keyof AddStudentsFilters;
-  label: string;
-  placeholder?: string;
+  label: PlanningText;
+  placeholder?: PlanningText;
   full?: boolean;
 }[] = [
-  { key: 'academicYear', label: 'Окуу жылы', full: true },
-  { key: 'faculty', label: 'Факультет', placeholder: 'Факультети танданыз', full: true },
-  { key: 'specialty', label: 'Адистикти тандоо', full: true },
-  { key: 'studyForm', label: 'Форма обучение' },
-  { key: 'semester', label: 'Семестр', placeholder: 'выберите семестр' },
-  { key: 'admission', label: 'Кабыл алуу', placeholder: 'выберите' },
-  { key: 'stream', label: 'Агым' },
-  { key: 'subject', label: 'Предмет', full: true },
-  { key: 'statement', label: 'Ведомость', placeholder: 'Выберите', full: true },
+  { key: 'academicYear', label: 'academicYear', full: true },
+  { key: 'faculty', label: 'faculty', placeholder: 'facultyPlaceholder', full: true },
+  { key: 'specialty', label: 'specialty', full: true },
+  { key: 'studyForm', label: 'studyForm' },
+  { key: 'semester', label: 'semester', placeholder: 'semesterPlaceholder' },
+  { key: 'admission', label: 'admission', placeholder: 'selectPlaceholder' },
+  { key: 'stream', label: 'stream' },
+  { key: 'subject', label: 'subject', full: true },
+  { key: 'statement', label: 'statement', placeholder: 'selectPlaceholder', full: true },
 ];
 
 const EMPTY_FILTERS: AddStudentsFilters = {
@@ -115,6 +120,7 @@ export default function AddStudentsDialog({
   students,
   initialFilters,
 }: AddStudentsDialogProps) {
+  const { t } = useLang();
   const [filters, setFilters] = useState<AddStudentsFilters>({
     ...EMPTY_FILTERS,
     ...initialFilters,
@@ -184,11 +190,11 @@ export default function AddStudentsDialog({
     >
       {/* Header */}
       <DialogTitle className="!flex !items-center !justify-between !px-6 !pb-2 !pt-5">
-        <span className="text-xl font-semibold tracking-tight text-slate-900">Жаңы кошуу</span>
+        <span className="text-xl font-semibold tracking-tight text-slate-900">{t.planning.addNew}</span>
         <IconButton
           onClick={onClose}
           size="small"
-          aria-label="Жабуу"
+          aria-label={t.common.close}
           className="!text-slate-400 hover:!bg-slate-100 hover:!text-slate-600"
         >
           <CloseRoundedIcon fontSize="small" />
@@ -199,8 +205,10 @@ export default function AddStudentsDialog({
         <div className="grid grid-cols-1 gap-6 pt-2 md:grid-cols-[1fr_320px]">
           {/* ----------------------------- Фильтры ----------------------------- */}
           <div className="grid grid-cols-2 gap-4 self-start">
-            {FIELDS.map(({ key, label, placeholder, full }) => {
+            {FIELDS.map(({ key, label: labelKey, placeholder: placeholderKey, full }) => {
               const items = options[key] ?? [];
+              const label = t.planning[labelKey] as string;
+              const placeholder = placeholderKey && (t.planning[placeholderKey] as string);
               return (
                 <div key={key} className={full ? 'col-span-2' : 'col-span-2 sm:col-span-1'}>
                   <TextField
@@ -235,7 +243,7 @@ export default function AddStudentsDialog({
           {/* ------------------------ Список студентов ------------------------- */}
           <div className="flex min-h-[320px] flex-col self-stretch rounded-2xl border border-slate-200 bg-white">
             <div className="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-3">
-              <span className="text-sm font-semibold text-slate-800">Список студентов</span>
+              <span className="text-sm font-semibold text-slate-800">{t.planning.studentsList}</span>
               <label className="flex cursor-pointer select-none items-center text-xs text-slate-600">
                 <Checkbox
                   size="small"
@@ -245,7 +253,7 @@ export default function AddStudentsDialog({
                   disabled={visible.length === 0}
                   className="!p-1"
                 />
-                Выбрать все
+                {t.common.selectAll}
               </label>
             </div>
 
@@ -259,7 +267,7 @@ export default function AddStudentsDialog({
                   <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Издөө"
+                    placeholder={t.common.search}
                     className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20"
                   />
                 </label>
@@ -269,7 +277,7 @@ export default function AddStudentsDialog({
             {students.length === 0 ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 py-10 text-center">
                 <GroupsRoundedIcon className="!text-slate-300" sx={{ fontSize: 36 }} />
-                <p className="text-sm text-slate-400">Агымды тандаңыз, студенттер ушул жерде чыгат</p>
+                <p className="text-sm text-slate-400">{t.planning.chooseStreamHint}</p>
               </div>
             ) : (
               <ul className="max-h-[420px] flex-1 overflow-y-auto p-1.5">
@@ -287,14 +295,14 @@ export default function AddStudentsDialog({
                   </li>
                 ))}
                 {visible.length === 0 && (
-                  <li className="py-6 text-center text-sm text-slate-400">Эч нерсе табылган жок</li>
+                  <li className="py-6 text-center text-sm text-slate-400">{t.common.nothingFound}</li>
                 )}
               </ul>
             )}
 
             {students.length > 0 && (
               <div className="border-t border-slate-100 px-4 py-2 text-xs text-slate-400">
-                Тандалды: {selected.size} / {students.length}
+                {t.planning.selected}: {selected.size} / {students.length}
               </div>
             )}
           </div>
@@ -308,14 +316,14 @@ export default function AddStudentsDialog({
           onClick={onClose}
           className="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/40"
         >
-          Жокко чыгаруу
+          {t.common.cancel}
         </button>
         <button
           type="submit"
           disabled={selected.size === 0}
           className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
         >
-          Кошуу{selected.size > 0 && ` (${selected.size})`}
+          {t.common.add}{selected.size > 0 && ` (${selected.size})`}
         </button>
       </DialogActions>
     </Dialog>

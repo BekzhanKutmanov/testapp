@@ -33,8 +33,10 @@ import { useImageVariant } from '@core/hooks/useImageVariant'
 
 import { adToken, getLogin } from '@/shared/api/auth/auth'
 import { toastMessages } from '@/shared/constants/toastMessages'
+import { useLang } from '@/shared/i18n'
 
 const Login = ({ mode }: { mode: Mode }) => {
+  const { t } = useLang()
   // States
   const [isPasswordShown, setIsPasswordShown] = useState(false)
 
@@ -93,26 +95,26 @@ const Login = ({ mode }: { mode: Mode }) => {
       <Card className='flex flex-col sm:is-[450px]'>
         <CardContent className='p-6 sm:!px-12 sm:!py-9'>
           <Link href='/public' className='flex justify-center items-center mbe-4'>
-            Система тестирование ОшГУ
+            {t.app.name}
           </Link>
           <div className='flex flex-col gap-5'>
             <div>
-              <Typography className={'test-sm'} variant='h4'>{`Добро пожаловать в Test App!👋🏻`}</Typography>
+              <Typography className={'test-sm'} variant='h4'>{t.login.welcome}</Typography>
             </div>
             <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
               <Controller
                 name='email'
                 control={control}
                 rules={{
-                  required: 'Логин обязателен',
-                  validate: value => !unsafeCharsRegex.test(value) || 'Используются недопустимые символы'
+                  required: t.login.loginRequired,
+                  validate: value => !unsafeCharsRegex.test(value) || t.login.unsafeChars
                 }}
                 render={({ field }) => (
                   <TextField
                     {...field}
                     autoFocus
                     fullWidth
-                    label='AVN логин'
+                    label={t.login.loginLabel}
                     error={!!errors.email}
                     helperText={errors.email ? (errors.email.message as string) : ''}
                   />
@@ -123,14 +125,14 @@ const Login = ({ mode }: { mode: Mode }) => {
                 name='password'
                 control={control}
                 rules={{
-                  required: 'Пароль обязателен',
-                  validate: value => !unsafeCharsRegex.test(value) || 'Используются недопустимые символы'
+                  required: t.login.passwordRequired,
+                  validate: value => !unsafeCharsRegex.test(value) || t.login.unsafeChars
                 }}
                 render={({ field }) => (
                   <TextField
                     {...field}
                     fullWidth
-                    label='Пароль'
+                    label={t.login.password}
                     type={isPasswordShown ? 'text' : 'password'}
                     error={!!errors.password}
                     helperText={errors.password ? (errors.password.message as string) : ''}
@@ -153,7 +155,7 @@ const Login = ({ mode }: { mode: Mode }) => {
               />
 
               <Button fullWidth variant='contained' type='submit' disabled={!isValid || postMutation.isPending}>
-                Войти
+                {t.common.login}
               </Button>
             </form>
           </div>

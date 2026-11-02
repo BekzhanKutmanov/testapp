@@ -1,6 +1,7 @@
 'use client';
 
 import type { Topic } from './TopicsTable';
+import { useLang } from '@/shared/i18n';
 
 interface Props {
     topics: Topic[];
@@ -8,10 +9,12 @@ interface Props {
 }
 
 export default function TopicsMobileList({ topics, className = '' }: Props) {
+    const { t } = useLang();
+
     if (topics.length === 0) {
         return (
             <div className={`rounded-2xl border border-slate-200 bg-white py-12 text-center text-sm text-slate-400 ${className}`}>
-                Эч нерсе табылган жок
+                {t.common.nothingFound}
             </div>
         );
     }
@@ -31,13 +34,13 @@ export default function TopicsMobileList({ topics, className = '' }: Props) {
                     </div>
 
                     <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
-                        <dt className="text-slate-400">Окутуучу</dt>
+                        <dt className="text-slate-400">{t.planning.teacher}</dt>
                         <dd className="text-slate-700">{topic.teacher}</dd>
 
-                        <dt className="text-slate-400">Предмети</dt>
+                        <dt className="text-slate-400">{t.common.subject}</dt>
                         <dd className="text-slate-700">{topic.subject}</dd>
 
-                        <dt className="text-slate-400">Суроонун саны</dt>
+                        <dt className="text-slate-400">{t.planning.questionCount}</dt>
                         <dd className="tabular-nums text-slate-700">{topic.questionCount}</dd>
                     </dl>
                 </li>

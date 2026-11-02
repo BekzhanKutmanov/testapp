@@ -10,18 +10,20 @@ import '@/app/globals.css'
 // Generated Icon CSS Imports
 import '@assets/iconify-icons/generated-icons.css'
 
-export const metadata = {
-  title: 'Система тестирования ОшГУ',
+import { getLang, getT } from '@/shared/i18n/server'
+
+export const generateMetadata = () => ({
+  title: getT().app.name,
   description:
     'Develop next-level web apps with Materio Dashboard Free - NextJS. Now, updated with lightning-fast routing powered by MUI and App router.'
-}
+})
 
 const RootLayout = ({ children }: ChildrenType) => {
   // Vars
   const direction = 'ltr'
 
   return (
-    <html id='__next' dir={direction}>
+    <html id='__next' dir={direction} lang={getLang()}>
       <head>
         <link
           href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap'

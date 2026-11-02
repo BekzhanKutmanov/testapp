@@ -11,6 +11,7 @@ import MaterioLogo from '@core/svg/Logo'
 
 // Config Imports
 import themeConfig from '@configs/themeConfig'
+import { useLang } from '@/shared/i18n'
 
 type LogoTextProps = {
   color?: CSSProperties['color']
@@ -27,6 +28,7 @@ const LogoText = styled.span<LogoTextProps>`
 `
 
 const Logo = ({ color }: { color?: CSSProperties['color'] }) => {
+  const { t } = useLang()
   return (
     <div className='flex items-center min-bs-[24px] gap-3'>
       {/*<MaterioLogo className='text-[22px] text-primary' />*/}
@@ -34,8 +36,8 @@ const Logo = ({ color }: { color?: CSSProperties['color'] }) => {
         <img src={'/images/logo-remove.png'} className={'w-full object-fit'}/>
       </div>
       <div className={'flex flex-col '}>
-        <h2>ОшГУ</h2>
-        <small className={''}>Система тестирования</small>
+        <h2>{t.app.university}</h2>
+        <small className={''}>{t.app.system}</small>
       </div>
     </div>
   )
