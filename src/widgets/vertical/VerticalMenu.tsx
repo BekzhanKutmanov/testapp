@@ -223,7 +223,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           <MenuItem href='/card-basic' icon={<i className='ri-home-smile-line' />}>
             {t.menu.dashboard}
           </MenuItem>
-          <MenuItem href='/planning' icon={<i className='ri-bar-chart-box-line' />}>
+          <MenuItem href='/planning/1' icon={<i className='ri-bar-chart-box-line' />}>
             {t.menu.planning}
           </MenuItem>
           {/*</MenuSection>*/}
