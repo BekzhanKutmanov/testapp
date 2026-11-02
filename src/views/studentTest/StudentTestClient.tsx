@@ -29,7 +29,8 @@ import QuestionCard from '../../shared/ui/question-card/QuestionCard';
 import QuestionNavigator, { type NavigatorItem } from '../../shared/ui/question-navigator/QuestionNavigator';
 import NavigationItems from '@/shared/ui/navigation-items/NavigationItems';
 import { useMediaQuery } from '@/shared/model/useMediaQuery';
-import { ProctorCamera } from '@/features/components/Face';
+import { ProctorCamera, type ProctorError, type ProctorState } from '@/features/components/Face';
+import ProctorGate from './ProctorGate';
 
 export default function StudentTestClient() {
   const router = useRouter();
@@ -45,7 +46,48 @@ export default function StudentTestClient() {
   const submittedRef = useRef(false);
   const scrollAfterCloseRef = useRef(false); // прокрутить к пропущенному после закрытия модалки
 
-  const { timeLeft, clearDeadline } = useTestTimer(TEST_ID, TEST_DURATION_SEC);
+  /* ---------- запуск прокторинга ---------- */
+
+  const [proctorState, setProctorState] = useState<ProctorState>({ status: 'loading', done: [] });
+  const [proctorDisabled, setProctorDisabled] = useState(false); // прокторинг не запустился — тест идёт без него
+  const [proctorAttempt, setProctorAttempt] = useState(0); // key для перезапуска ProctorCamera
+  const [testStarted, setTestStarted] = useState(false); // тест (и таймер) начинается после готовности прокторинга
+  const testStartedRef = useRef(false);
+  testStartedRef.current = testStarted;
+
+  // Что делать, если прокторинг не удалось запустить (или он отвалился во время теста).
+  // TODO: решить позже — сделать снимок, пометить попытку для преподавателя, отправить на бэкенд и т.п.
+  const handleProctorFailed = useCallback((error: ProctorError, stage: 'before-test' | 'during-test') => {
+    console.warn('Прокторинг не работает:', stage, error);
+  }, []);
+
+  const handleProctorState = useCallback(
+    (state: ProctorState) => {
+      setProctorState(state);
+
+      if (state.status === 'ready') setTestStarted(true);
+
+      // Ошибка уже во время теста (например, отключили камеру) — тест не останавливаем
+      if (state.status === 'error' && testStartedRef.current) {
+        handleProctorFailed(state.error, 'during-test');
+        setProctorDisabled(true);
+      }
+    },
+    [handleProctorFailed],
+  );
+
+  const retryProctor = () => {
+    setProctorState({ status: 'loading', done: [] });
+    setProctorAttempt((n) => n + 1);
+  };
+
+  const startWithoutProctor = () => {
+    if (proctorState.status === 'error') handleProctorFailed(proctorState.error, 'before-test');
+    setProctorDisabled(true);
+    setTestStarted(true);
+  };
+
+  const { timeLeft, clearDeadline } = useTestTimer(TEST_ID, TEST_DURATION_SEC, testStarted);
 
   const total = QUESTIONS.length;
   const navigatorItems = useMemo<NavigatorItem[]>(
@@ -283,8 +325,9 @@ export default function StudentTestClient() {
         {!media && <NavigationItems items={navigatorItems} handleSelect={scrollToQuestion} />}
       </div>
 
-      {mounted && 
+      {mounted && !proctorDisabled &&
         <ProctorCamera
+          key={proctorAttempt}
           onFacesDetected={setFacesDetected}
           onMatchResult={setMatchResult}
           onLookingAway={setIsLookingAway}
@@ -292,8 +335,14 @@ export default function StudentTestClient() {
           matchResult={matchResult}
           isLookingAway={isLookingAway}
           resultSend={resultSend}
+          onStateChange={handleProctorState}
         />
       }
+
+      {/* Пока прокторинг не готов — тест закрыт экраном загрузки */}
+      {!testStarted && (
+        <ProctorGate state={proctorState} onRetry={retryProctor} onContinueWithout={startWithoutProctor} />
+      )}
 
       <div>
         {screenshots.map((s, i) => (
