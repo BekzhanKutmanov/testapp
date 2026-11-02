@@ -17,7 +17,6 @@ import classnames from 'classnames'
 
 // Component Imports
 import NavToggle from './NavToggle'
-import ModeDropdown from '@/shared/ui/components/ModeDropdown'
 import LangSwitcher from '@/shared/ui/components/LangSwitcher'
 
 // Util Imports
@@ -25,15 +24,11 @@ import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
 
 import UserDropdown from '@/shared/ui/components/UserDropdown'
 import MainTitle from '@/shared/ui/components/MainTitle'
-import { useThemeContext } from '@/features/ThemeContext'
-import { useSettings } from '@core/hooks/useSettings'
 import { useLang } from '@/shared/i18n'
 
 const NavbarContent = () => {
   const { t } = useLang()
   // States
-  const { settings } = useSettings()
-
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
 
@@ -65,10 +60,7 @@ const NavbarContent = () => {
         <NavToggle />
         <div className={'hidden sm:flex items-center gap-1'}>
           <div className={' flex justify-center items-start'}>
-            {settings.mode == 'light' ?
-              <img src={'/images/logo-remove.png'} className={'w-[50px] '}/>
-              : <img src={'/images/white-logo.png'} className={'w-[40px] mx-1'}/>
-            }
+            <img src={'/images/logo-remove.png'} className={'w-[50px] '}/>
           </div>
           <h2 className={'sm:text-3xl'}>{t.app.name}</h2>
         </div>
@@ -90,7 +82,6 @@ const NavbarContent = () => {
         {/*      sx={{ '& .MuiMenu-paper': { minWidth: '150px' } }}*/}
         {/*    >*/}
         {/*      <div className='flex items-center justify-around p-2'>*/}
-        {/*        <ModeDropdown />*/}
         {/*        <IconButton className='text-textPrimary'>*/}
         {/*          <i className='ri-notification-2-line' />*/}
         {/*        </IconButton>*/}
@@ -107,7 +98,6 @@ const NavbarContent = () => {
         {/*) : (*/}
         <>
           <LangSwitcher />
-          <ModeDropdown />
           <IconButton className='text-textPrimary'>
             <i className='ri-notification-2-line' />
           </IconButton>

@@ -55,9 +55,7 @@ export const ru = {
     nothingFound: 'Ничего не найдено',
     noData: 'Данных нет',
     tryLater: 'Повторите позже',
-    language: 'Язык',
-    lightMode: 'Светлая тема',
-    darkMode: 'Тёмная тема'
+    language: 'Язык'
   },
 
   app: {
@@ -316,9 +314,7 @@ export const ky: Dict = {
     nothingFound: 'Эч нерсе табылган жок',
     noData: 'Маалымат жок',
     tryLater: 'Кийинчерээк кайталаңыз',
-    language: 'Тил',
-    lightMode: 'Жарык тема',
-    darkMode: 'Караңгы тема'
+    language: 'Тил'
   },
 
   app: {

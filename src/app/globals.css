@@ -24,10 +24,6 @@
   --myDarkColor: #312D4B;
 }
 
-[data-mui-color-scheme='dark'] {
-  --backdrop-color: rgb(21 16 43 / 0.6);
-}
-
 *,
 ::before,
 ::after {
